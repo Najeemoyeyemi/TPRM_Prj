@@ -1,0 +1,76 @@
+{
+  "skill_name": "tprm",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're a mid-size UK financial services firm regulated by the FCA. We're about to onboard a new SaaS provider for our customer CRM platform. They'll have access to personal data for about 200,000 retail customers — names, addresses, phone numbers, transaction history. They're based in the US and use AWS infrastructure. We've done nothing formal yet. Walk me through what we need to do and what the key risks are.",
+      "expected_output": "A structured end-to-end assessment walkthrough covering: inherent risk classification (likely Critical or High given personal data volume + FCA regulated firm), applicable risk domains (cybersecurity, data privacy with GDPR/UK GDPR focus, operational resilience), due diligence requirements (SOC 2 Type II, ISO 27001, DPA, SCCs for US data transfer), contractual requirements, FCA/EBA outsourcing considerations, and monitoring approach. Should call out GDPR Article 28 DPA requirement, SCCs or UK IDTA for US transfer, and operational resilience implications.",
+      "files": [],
+      "assertions": [
+        "Response identifies this as High or Critical tier based on personal data volume and FCA regulation",
+        "Response calls out GDPR/UK GDPR Article 28 DPA requirement for US-based processor",
+        "Response addresses cross-border data transfer mechanism (SCCs or UK IDTA) for US transfer",
+        "Response mentions ISO 27001 or SOC 2 Type II as preferred cybersecurity evidence",
+        "Response addresses FCA/EBA outsourcing or operational resilience implications",
+        "Response covers all or most of: due diligence, contracting, monitoring, and ongoing oversight",
+        "Response is structured with clear sections and actionable guidance"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design a risk scoring methodology for our TPRM programme. We need something that's defensible to internal audit, works for all vendor types (IT vendors, professional services, facilities, logistics), and gives us a clear tier output. We have about 300 active vendors and currently just use a spreadsheet with no consistent scoring. What should the model look like?",
+      "expected_output": "A practical risk scoring model covering: scoring dimensions (data sensitivity, system access, business criticality, regulatory exposure, geographic risk, concentration risk), scoring scale (1-4 or 1-5 per dimension), weighting rationale, tier thresholds (Critical/High/Medium/Low), worked examples for different vendor types, and audit trail requirements. Should address how to make it defensible (documentation, calibration, override process) and how to apply consistently across different vendor categories.",
+      "files": [],
+      "assertions": [
+        "Response defines at least 4 distinct scoring dimensions",
+        "Response provides a clear tier output structure (e.g., Critical/High/Medium/Low)",
+        "Response includes numeric scoring criteria or thresholds for each tier",
+        "Response addresses how to handle different vendor types (IT vs. professional services vs. facilities)",
+        "Response addresses audit defensibility (documentation, evidence, override process)",
+        "Response provides enough detail to actually implement the model"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our head of risk wants a TPRM governance framework design — who owns what, what committees are involved, what needs board visibility, and how approvals should work for different risk levels. We're a 2,000-person company in the energy sector, not heavily regulated compared to financial services but we do have data protection and supply chain obligations. What should our governance model look like?",
+      "expected_output": "A practical governance structure including: three lines of defence in TPRM context, roles and responsibilities (business owner, TPRM function, procurement, legal, cyber), tiered approval authority matrix, governance bodies and their remit (operational team, risk committee, board), RACI model, policy architecture (policy > standard > procedure), escalation triggers, and reporting cadence. Should be proportionate to energy sector (not over-engineered for light regulation) while still covering data protection and supply chain obligations.",
+      "files": [],
+      "assertions": [
+        "Response defines clear three lines of defence applied to TPRM",
+        "Response includes a tiered approval authority matrix by risk level",
+        "Response specifies governance bodies and their meeting frequency",
+        "Response includes an escalation framework with specific triggers",
+        "Response is proportionate — does not over-engineer for a non-heavily-regulated sector",
+        "Response addresses both board-level and operational-level governance"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We've just been told by our CISO that one of our critical SaaS vendors — we use them for our enterprise HR platform which holds payroll and personal data for all 5,000 employees — has disclosed a data breach. They say it may have affected customer data but haven't confirmed whether our data was included. What do we do right now, and what should happen over the next 72 hours and beyond?",
+      "expected_output": "An incident response playbook for third-party data breach: immediate actions (invoke IR plan, notify privacy officer, legal, CISO, DPO), information gathering from vendor (scope, data types affected, timeline, containment), GDPR 72-hour notification assessment (do we need to notify ICO?), employee communications considerations, contractual entitlements (audit rights, incident report), medium-term actions (own investigation, enhanced monitoring, reassessment), and longer-term relationship assessment.",
+      "files": [],
+      "assertions": [
+        "Response addresses the GDPR 72-hour notification clock to supervisory authority",
+        "Response calls out internal escalation to DPO/Privacy Officer, Legal, and CISO",
+        "Response covers information gathering steps from the vendor",
+        "Response addresses contractual entitlements (audit rights, incident report, notification obligations)",
+        "Response includes both immediate (0-24h) and medium-term (72h+) actions",
+        "Response addresses employee communication considerations given HR data involved"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We're a bank preparing for DORA compliance. Our ICT team has given me a list of 45 ICT third-party providers. I need to: figure out which ones are 'critical' under DORA, understand what contractual changes we need, and build the ICT register. Can you help me structure this work and tell me exactly what DORA requires for these three things?",
+      "expected_output": "Structured DORA compliance guidance covering: (1) Criticality determination — DORA Article 28 criteria, how to assess which functions are critical/important, the formal determination process; (2) Contractual requirements — DORA Article 30 mandatory provisions list; (3) ICT register — Article 28(3) and RTS fields required, how to structure the register, what to report to regulator.",
+      "files": [],
+      "assertions": [
+        "Response references DORA Article 28 for ICT third-party risk management requirements",
+        "Response references DORA Article 30 for contractual requirements",
+        "Response provides the specific list of mandatory contract provisions under DORA Article 30",
+        "Response addresses the ICT register requirements including fields needed",
+        "Response explains the critical/important function determination criteria",
+        "Response is actionable — a bank team could use it to execute the work"
+      ]
+    }
+  ]
+}

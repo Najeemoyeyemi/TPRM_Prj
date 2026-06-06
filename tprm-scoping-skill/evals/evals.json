@@ -1,0 +1,78 @@
+{
+  "skill_name": "tprm-scoping",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're scoping a TPRM programme. We're a payments fintech headquartered in Ireland, operating across the EU and with a UK entity. We process cardholder and personal data, we rely heavily on AWS and a couple of offshore dev shops in India, and we've just embedded a third-party AI fraud-scoring model. We think we need Cybersecurity, Data Privacy and Financial Risk in scope. Review that and tell us what regulations apply and whether our domain selection is right.",
+      "expected_output": "A scoping review that maps jurisdictions/sector to obligations (DORA as EU financial entity, EBA/PSD2, GDPR + UK GDPR with SCCs/IDTA for India + AWS transfers, EU AI Act for the fraud model, NIS2 possibly) and flags GAPS in the domain selection: Operational Resilience (DORA), Fourth-Party (India dev shops, AWS sub-processors), Concentration (AWS dependency), AI/Model Risk (the AI model), arguably ABAC. Should explain why each applies and recommend adding the missing domains.",
+      "files": [],
+      "assertions": [
+        "Identifies DORA as applicable (EU financial entity) and explains its third-party requirements",
+        "Identifies GDPR/UK GDPR and the need for a cross-border transfer mechanism for India and US/AWS",
+        "Identifies the EU AI Act as applicable to the third-party fraud-scoring model",
+        "Flags Operational Resilience as a gap (not selected but required under DORA)",
+        "Flags Fourth-Party / sub-processor risk as a gap given offshore dev shops and AWS",
+        "Flags AI / Model Risk as a gap given the embedded third-party model",
+        "Distinguishes mandatory (regulatory) obligations from recommended ones"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Here's our TPRM engagement configuration — review it for gaps, conflicts and over-scoping before we sign off. Domains: Cybersecurity, Data Privacy, ESG, Physical Security. Jurisdictions: UK only, we're a 400-person SaaS company, turnover about GBP 50m, no regulated activities. Lifecycle phases: Intake, Due Diligence, Continuous Monitoring, Offboarding. Deliverables we want: Due Diligence Questionnaires, Security Clauses, KPI/KRI Catalogue, Executive Dashboard. We do NOT want a TPRM Policy or Operating Model yet.",
+      "expected_output": "A coherence review that surfaces: GAP — no Risk Scoring/Tiering despite Due Diligence and monitoring needing it, and no Risk Tiering phase; GAP — Privacy Addendum/DPA missing though Data Privacy in scope and UK GDPR applies; GAP — Modern Slavery Act applies (>GBP 36m UK turnover) supporting ESG/supply-chain, but supply-chain due diligence deliverable missing; OVER-SCOPE — Physical Security for a SaaS vendor population likely lacks a driver, confirm; DEPENDENCY/CONFLICT — declining Policy/Operating Model while requesting SOPs-adjacent operational deliverables and dashboards undermines governance foundation; DEPENDENCY — KPI/KRI Catalogue must precede Executive Dashboard. Should be proportionate (not over-engineered for a non-regulated SME).",
+      "files": [],
+      "assertions": [
+        "Flags the absence of a Risk Scoring Methodology / tiering as a gap given Due Diligence and monitoring are in scope",
+        "Flags missing Privacy Addendum/DPA despite Data Privacy domain and UK GDPR applicability",
+        "Identifies Modern Slavery Act applicability (UK turnover > GBP 36m) relevant to ESG/supply chain",
+        "Flags Physical Security as a likely over-scope item for a SaaS vendor population and asks for rationale",
+        "Notes the dependency that KPI/KRI Catalogue precedes the Executive Dashboard",
+        "Raises the risk of declining a TPRM Policy/Operating Model while requesting operational and reporting deliverables",
+        "Keeps recommendations proportionate to a non-regulated 400-person SME"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We operate in the US (including a New York banking entity), Germany, and Singapore. We're a financial services group. Before we pick domains and deliverables, just give me the regulatory obligation map — what third-party/outsourcing and related rules apply in each location and what they'll demand of our TPRM programme.",
+      "expected_output": "A jurisdiction-by-jurisdiction regulatory obligation map: US federal FFIEC/OCC interagency third-party guidance + GLBA Safeguards; New York specifically DFS 23 NYCRR 500 (third-party service provider security, MFA, encryption); Germany/EU DORA + EBA outsourcing guidelines + GDPR + possibly CSRD/LkSG/CSDDD for ESG supply chain; Singapore MAS Outsourcing and TRM Guidelines. Each should state what it requires of TPRM (registers, clauses, due diligence, exit plans, notification). Should note extraterritorial/cross-cutting items and where legal review is needed.",
+      "files": [],
+      "assertions": [
+        "Identifies US FFIEC/OCC interagency third-party risk guidance and GLBA for the US financial entity",
+        "Specifically identifies NY DFS 23 NYCRR 500 for the New York banking entity",
+        "Identifies DORA and EBA outsourcing guidelines for the German/EU financial operations",
+        "Identifies MAS outsourcing / technology risk management guidelines for Singapore",
+        "States what each regime requires of a TPRM programme (e.g., register, contract clauses, exit, notification)",
+        "Organises the output clearly by jurisdiction and notes where local legal review is advisable"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Produce a full TPRM scoping and configuration report for this client: a UK NHS-adjacent healthcare provider, 2,000 staff, handles patient health records, uses several SaaS clinical systems and an offshore medical transcription service in the Philippines. They want a complete net-new TPRM programme — all lifecycle phases, full governance, assessment, operational, contract, reporting deliverables. Current state is a basic spreadsheet. Give me the scoping report.",
+      "expected_output": "A complete scoping report following the template: engagement context (healthcare, UK, special-category health data, offshore processor, low maturity net-new), domain scope (Cyber, Privacy mandatory, Operational Resilience, Fourth-Party for offshore, plus others with rationale), regulatory map (UK GDPR special-category Art.9, DPA 2018, NHS DSPT, Caldicott, cross-border transfer to Philippines via IDTA, Modern Slavery), lifecycle phases all in scope, coherence findings, deliverables plan with sequencing, recommended configuration, open questions, and a phased roadmap appropriate to low maturity. Should sequence governance before operations and note quick wins.",
+      "files": [],
+      "assertions": [
+        "Follows the scoping report structure (context, domain scope, regulatory map, phases, findings, deliverables plan, roadmap)",
+        "Identifies UK GDPR special-category (health) data obligations and NHS DSPT for healthcare suppliers",
+        "Addresses the cross-border transfer to the Philippines (UK IDTA / transfer mechanism)",
+        "Flags Fourth-Party / offshore processor risk for the transcription service",
+        "Produces a phased roadmap that sequences governance foundation before operational deliverables",
+        "Tailors the roadmap to a low-maturity, net-new programme and identifies quick wins",
+        "Includes a coherence findings section and open questions for the client"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Our procurement lead drafted this deliverables wishlist and I want to know if the order makes sense and if anything's missing: they want us to start by writing all the SOPs and the RACI, then do a Tool Capability Assessment, then build the KPI dashboard, then later figure out the risk scoring methodology and write the TPRM policy at the end. We're an energy company, EU + UK operations, moderate maturity. Sanity-check the sequencing.",
+      "expected_output": "A dependency/sequencing critique: SOPs and RACI require the Operating Model first (and Policy is foundational, not last) — writing SOPs before the governance foundation is backwards; risk scoring methodology must precede assessment templates and should come early, not late; the KPI dashboard requires a KPI/KRI catalogue first; Tool Capability Assessment should follow workflow/requirements definition. Should propose a corrected build order (foundation -> governance -> methodology -> operations -> reporting -> technology) and note NIS2/energy sector and EU+UK obligations that may add supply-chain/cyber scope.",
+      "files": [],
+      "assertions": [
+        "Identifies that TPRM Policy is foundational and should not be sequenced last",
+        "Identifies that SOPs and RACI depend on the Operating Model being defined first",
+        "Identifies that the Risk Scoring Methodology must precede assessment templates and should come early",
+        "Identifies that the KPI/KRI Catalogue must precede the Executive Dashboard",
+        "Proposes a corrected, dependency-respecting build order",
+        "Notes energy-sector / NIS2 and EU+UK considerations relevant to scope"
+      ]
+    }
+  ]
+}
