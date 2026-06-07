@@ -1,0 +1,74 @@
+{
+  "skill_name": "tprm-irq",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build us an inherent risk questionnaire for onboarding new suppliers. Our scoped risk domains are cybersecurity, data privacy, and operational resilience. It needs to be filled in by the business owner sponsoring the supplier, who isn't technical. Keep it short.",
+      "expected_output": "A respondent-facing IRQ limited to <=30 questions covering engagement basics, gating questions, and only the branch modules for cyber, privacy, and operational resilience. Questions in plain business language (no jargon/regulation names/technical controls). Gating/branching shown explicitly. Includes an internal scoring annex mapping answers to dimensions, an overall tier, override triggers, and which due-diligence domains are triggered. States the question count and confirms <=30.",
+      "files": [],
+      "assertions": [
+        "The questionnaire has no more than 30 questions and states the count",
+        "Includes engagement-basics questions and high-level yes/no gating questions",
+        "Includes branch follow-ups only for cyber, privacy, and operational resilience (no out-of-scope modules like ABAC or AI)",
+        "Questions use plain business language and avoid technical jargon, regulation names, and control terms (no MFA, encryption, GDPR, RTO, etc.)",
+        "Branching/gating logic is shown explicitly (e.g., 'if No, skip to...')",
+        "Includes a scoring key/annex that maps answers to a risk tier (Critical/High/Medium/Low)",
+        "Identifies which due-diligence domains are triggered by high-risk answers"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We only care about cybersecurity risk for now. Give me a really short inherent risk questionnaire a procurement manager can use to triage whether a new IT vendor is high or low risk.",
+      "expected_output": "A short IRQ focused on the cyber-relevant signals: engagement basics plus the system-access and confidential-data gates and their branches, without privacy/ESG/ABAC/AI modules. Plain language for a procurement manager. Should be clearly shorter than a full-scope IRQ (well under 30) and not padded. Includes a simple scoring/tiering key.",
+      "files": [],
+      "assertions": [
+        "The IRQ is short and focused (notably fewer than 30 questions) and not padded with out-of-scope modules",
+        "Focuses on system access and confidential-information signals relevant to cyber risk",
+        "Does not include unrelated modules (privacy volume, ESG, ABAC, AI) since only cyber is in scope",
+        "Language is plain and suitable for a non-technical procurement manager",
+        "Includes a way to translate answers into a high/low (or tiered) risk outcome"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create an inherent risk questionnaire that covers ALL of our risk domains: cyber, data privacy, operational resilience, ABAC, ESG, financial, fourth-party, AI/model risk, physical security, supply chain, and concentration. It still has to be answerable by a business owner and can't be a huge form.",
+      "expected_output": "A comprehensive IRQ that still respects the 30-question cap by using gating so the respondent only answers what's relevant. Should include gates for all domains with conditional branch modules, plain language throughout, and a scoring annex. Must explicitly keep the total pool at or under 30 and rely on branching to keep the respondent's actual burden low.",
+      "files": [],
+      "assertions": [
+        "The total question pool is capped at 30 even though all domains are in scope",
+        "Uses gating so a respondent only answers relevant branches rather than all questions",
+        "Covers all the requested domains via gates and conditional modules",
+        "Explicitly notes the cap/branching keeps respondent burden low (e.g., typical respondent answers far fewer than 30)",
+        "Remains in plain business language despite broad scope",
+        "Includes the scoring annex producing a tier and due-diligence triggers"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "A colleague drafted these IRQ questions but they're way too technical for our business sponsors to answer: 'Does the vendor process special category data under GDPR Article 9?', 'Will the vendor have privileged access to production environments?', 'What is the data residency and onward transfer mechanism?', 'Is the service an Important Business Service with a defined impact tolerance?'. Rewrite them so a non-technical business owner can answer, and tell me what each one is actually measuring.",
+      "expected_output": "Plain-language rewrites of each technical question suitable for a business owner, plus a note of the underlying risk dimension each measures (special category data -> data sensitivity/regulatory; privileged prod access -> system access; data residency -> geographic/transfer; important business service -> business criticality/operational resilience). Rewrites should use concrete bracketed examples and closed answers where possible.",
+      "files": [],
+      "assertions": [
+        "Rewrites each of the four questions into plain, non-technical language",
+        "Removes jargon and regulation references (GDPR Article 9, production environments, data residency, Important Business Service) from the respondent-facing wording",
+        "Uses concrete examples or closed answer options to aid a non-technical respondent",
+        "Explains what risk dimension each question is actually measuring",
+        "The rewrites are answerable by a business owner without technical knowledge"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Walk me through using an IRQ for a real case: we're a UK retailer onboarding a marketing analytics SaaS vendor that will receive our loyalty-program customer data (about 2 million customers, names/emails/purchase history) and runs on AWS in the US. Generate the questionnaire, show how the business owner would likely answer, and what risk tier and follow-up that produces.",
+      "expected_output": "An assembled IRQ (privacy, cyber, operational, geographic, fourth-party relevant), a plausible set of business-owner answers for this scenario, and a worked scoring result: high data sensitivity (2M customers, personal data), US transfer (geographic), SaaS access, producing a High or Critical tier, with due-diligence triggers (privacy DD + DPA/transfer assessment, cybersecurity DDQ, possibly fourth-party). Should show the tier derivation and that the questionnaire stayed within 30.",
+      "files": [],
+      "assertions": [
+        "Generates an appropriate IRQ for the scenario and shows plausible business-owner answers",
+        "Flags high data sensitivity given ~2 million customers' personal data",
+        "Captures the cross-border (US) data transfer via the geographic question",
+        "Derives an overall risk tier (High or Critical) and shows how it was calculated",
+        "Identifies due-diligence follow-ups (e.g., privacy DD + DPA/transfer assessment, cybersecurity questionnaire)",
+        "Confirms the questionnaire stayed within the 30-question limit"
+      ]
+    }
+  ]
+}
