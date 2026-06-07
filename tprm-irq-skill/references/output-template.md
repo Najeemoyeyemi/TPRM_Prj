@@ -124,7 +124,7 @@ Open items ("Don't know" answers to confirm): [list]
 
 Respondent answers: A3 = £100k–£500k (3); A4 = 3+ years (3); A5 = 1–3 months (3); B1 = Yes → P1 = 10k–100k (3), P2 = Yes (4); B2 = Yes → C1 = Serious (3); B3 = Yes → IT1 = "can change settings or data" (3), IT2 = No (1); B4 = Yes → O1 = "customers/regulators affected" (3), O2 = Days (2); B5 No; B6 Yes → F1 = Roughly (2); B7 No; B8 No; B9 Yes → G1 = "other low-risk (US)" (2).
 
-Dimension scores: Data sensitivity **4** (P2); System access **3** (IT1); Business criticality **3** (A4/A5/O1); Regulatory exposure **4** (P2); Geographic **2** (G1); Concentration **2** (F1).
-Average = (4+3+3+4+2+2)/6 = **3.0 → High**. Override: C-P2 Yes + P1 ≥ 10k → **minimum High** (consistent). **FINAL TIER: High.**
+Dimension scores: Data sensitivity **4** (P2); System access **3** (IT1); Business criticality **3** (A4/A5/O1); Regulatory exposure **4** (P2); Geographic **2** (G1); Concentration **3** (A5 — "couldn't switch within 1–3 months" also feeds concentration).
+Average = (4+3+3+4+2+3)/6 = **3.17 → High**. Override: C-P2 Yes + P1 ≥ 10k → **minimum High** (consistent). **FINAL TIER: High.**
 Triggers: Data Privacy DD + DPA/transfer; Cybersecurity DDQ; Operational/BCP review; Fourth-party disclosure.
 Respondent answered **~17** questions; pool for this scope was **24**. Well within 30.

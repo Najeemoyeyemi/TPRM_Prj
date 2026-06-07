@@ -49,7 +49,30 @@ Lay out the questions in order: basics → gating → conditional branches. Show
 Behind the respondent-facing questionnaire, include the **scoring annex**: how each answer maps to a dimension score, how scores roll up to a tier (aligned with the `tprm` skill's `scoring.md`), the override triggers, and which answers escalate to which due-diligence domain. This is not shown to the respondent.
 
 ### Step 5 — Output
-Produce the IRQ in the format in `references/output-template.md`: a respondent-friendly questionnaire (with a reassuring plain-language intro) plus the internal scoring annex. Offer to render it as a document or spreadsheet if the user wants to deploy it.
+Produce the IRQ in the format in `references/output-template.md`: a respondent-friendly questionnaire (with a reassuring plain-language intro) plus the internal scoring annex. For a deployable **fillable Excel form**, use the bundled renderer (below) rather than hand-building a spreadsheet.
+
+---
+
+## Rendering to Excel (fillable form with live scoring)
+
+The skill bundles a script that turns the question set into a styled `.xlsx`: a **Questionnaire** sheet with dropdown answers and branching notes, and a **Scoring** sheet whose formulas compute the dimension scores, the tier (with override escalation), and the due-diligence triggers **live as the form is filled**. The respondent never sees the scoring sheet.
+
+```bash
+# Full 30-question pool:
+python scripts/build_irq_xlsx.py --out IRQ.xlsx
+
+# Scoped to specific domains (only those Section C modules are included):
+python scripts/build_irq_xlsx.py \
+  --domains "Cybersecurity,Data Privacy,Operational Resilience" \
+  --supplier "Acme Ltd" --out Acme_IRQ.xlsx
+```
+
+- `--domains` takes the in-scope domain names (e.g. from a `tprm-scoping` report). Omit it for all 30.
+- The script reads `scripts/irq_questions.json` — the machine-readable mirror of the question bank. To customise questions, edit that JSON (keep each option's `score`), not the script.
+- It refuses to build if a scope somehow exceeds 30 questions, enforcing the cap mechanically.
+- The headline **risk tier** appears at the top of the Questionnaire sheet (pulled from the Scoring sheet), so the business owner sees the result immediately on completion.
+
+When the user wants a questionnaire they can actually send out, generate the Excel rather than only pasting the questions into chat.
 
 ---
 

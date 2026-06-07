@@ -1,0 +1,84 @@
+{
+  "title": "Inherent Risk Questionnaire",
+  "intro": "This short questionnaire helps us understand the risk of working with a new supplier so we apply the right level of checks - no more than necessary. It takes about five minutes. You don't need any technical knowledge: just answer about what this supplier will do for you and what they'll be able to see or access. If you're unsure, choose \"Don't know\" - we'll follow up.",
+  "dimensions": ["data_sensitivity", "system_access", "business_criticality", "regulatory_exposure", "geographic", "concentration"],
+  "dimension_labels": {
+    "data_sensitivity": "Data sensitivity",
+    "system_access": "System access",
+    "business_criticality": "Business criticality",
+    "regulatory_exposure": "Regulatory exposure",
+    "geographic": "Geographic",
+    "concentration": "Concentration"
+  },
+  "dimension_map": {
+    "data_sensitivity": ["B1", "B2", "C-P1", "C-P2", "C-C1"],
+    "system_access": ["B3", "B7", "C-IT1", "C-IT2", "C-PH1"],
+    "business_criticality": ["A3", "A4", "A5", "B4", "C-O1", "C-O2"],
+    "regulatory_exposure": ["C-P2", "C-A1", "C-A2", "C-AI1"],
+    "geographic": ["B9", "C-G1", "C-A1"],
+    "concentration": ["A5", "C-F1", "C-CON1"]
+  },
+  "tiers": [
+    {"name": "Critical", "min": 3.5, "rank": 4},
+    {"name": "High", "min": 2.5, "rank": 3},
+    {"name": "Medium", "min": 1.5, "rank": 2},
+    {"name": "Low", "min": 0.0, "rank": 1}
+  ],
+  "overrides": [
+    {"id": "OV1", "note": "Privileged control of core systems on a critical service", "when": "C-IT1=4 AND B4=Yes", "min_rank": 4},
+    {"id": "OV2", "note": "Sensitive personal data at volume", "when": "C-P2=Yes AND C-P1>=3", "min_rank": 3},
+    {"id": "OV3", "note": "Critical operational dependency", "when": "C-O1>=4 OR C-O2>=4", "min_rank": 3},
+    {"id": "OV4", "note": "Acting with government / higher-risk markets on your behalf", "when": "C-A1=Yes", "min_rank": 3},
+    {"id": "OV5", "note": "No realistic alternative supplier", "when": "C-CON1>=4", "min_rank": 3}
+  ],
+  "sections": [
+    {
+      "id": "A",
+      "name": "About the engagement",
+      "questions": [
+        {"id": "A1", "text": "In a sentence or two, what will this supplier do for you?", "type": "text", "dimension": null, "domains": ["core"], "gate": null, "options": []},
+        {"id": "A2", "text": "Is this a brand-new supplier, or replacing/renewing an existing one?", "type": "choice", "dimension": null, "domains": ["core"], "gate": null, "options": [{"label": "New", "score": null}, {"label": "Replacement", "score": null}, {"label": "Renewal", "score": null}]},
+        {"id": "A3", "text": "Roughly how much will you spend with them per year?", "type": "choice", "dimension": "business_criticality", "domains": ["core"], "gate": null, "options": [{"label": "Under £25k", "score": 1}, {"label": "£25k-£100k", "score": 2}, {"label": "£100k-£500k", "score": 3}, {"label": "Over £500k", "score": 4}]},
+        {"id": "A4", "text": "How long do you expect to rely on them?", "type": "choice", "dimension": "business_criticality", "domains": ["core"], "gate": null, "options": [{"label": "One-off / under a year", "score": 1}, {"label": "1-3 years", "score": 2}, {"label": "3+ years, ongoing", "score": 3}, {"label": "Indefinite / deeply embedded", "score": 4}]},
+        {"id": "A5", "text": "If this supplier suddenly couldn't deliver, how quickly could you cope or switch?", "type": "choice", "dimension": "business_criticality", "domains": ["core"], "gate": null, "options": [{"label": "Easily, within days", "score": 1}, {"label": "Within about a month", "score": 2}, {"label": "1-3 months", "score": 3}, {"label": "We couldn't easily replace them", "score": 4}]}
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Quick checks",
+      "questions": [
+        {"id": "B1", "text": "Will they handle any information about people - your customers, employees, or others?", "type": "choice", "dimension": "data_sensitivity", "domains": ["core"], "gate": null, "opens": "C-P", "branch_note": "If No, skip to B2.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B2", "text": "Will they see confidential business information - contracts, finances, strategy, designs, or source code?", "type": "choice", "dimension": "data_sensitivity", "domains": ["core"], "gate": null, "opens": "C-C", "branch_note": "If No, skip to B3.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B3", "text": "Will they be able to log in to, connect to, or change any of the systems or tools you use to run the business?", "type": "choice", "dimension": "system_access", "domains": ["core"], "gate": null, "opens": "C-IT", "branch_note": "If No, skip to B4.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B4", "text": "Does this supplier support something your customers rely on, or a critical internal process?", "type": "choice", "dimension": "business_criticality", "domains": ["core"], "gate": null, "opens": "C-O", "branch_note": "If No, skip to B5.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B5", "text": "Will they act on your behalf with customers, government, or others - for example handling payments, sales, or representing you?", "type": "choice", "dimension": "regulatory_exposure", "domains": ["core"], "gate": null, "opens": "C-A", "branch_note": "If No, skip to B6.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B6", "text": "Will they use their own subcontractors or other companies to deliver the service?", "type": "choice", "dimension": "concentration", "domains": ["core"], "gate": null, "opens": "C-F", "branch_note": "If No, skip to B7.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}, {"label": "Don't know", "score": 3}]},
+        {"id": "B7", "text": "Will they have physical access to your offices, sites, or equipment?", "type": "choice", "dimension": "system_access", "domains": ["core"], "gate": null, "opens": "C-PH", "branch_note": "If No, skip to B8.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}]},
+        {"id": "B8", "text": "Does the service involve artificial intelligence or automated decisions that affect people?", "type": "choice", "dimension": "regulatory_exposure", "domains": ["core"], "gate": null, "opens": "C-AI", "branch_note": "If No, skip to B9.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}, {"label": "Don't know", "score": 2}]},
+        {"id": "B9", "text": "Will any of your information be stored or accessed from outside the UK/EU?", "type": "choice", "dimension": "geographic", "domains": ["core"], "gate": null, "opens": "C-G", "branch_note": "If No, finish or continue to scoped questions.", "options": [{"label": "Yes", "score": null}, {"label": "No", "score": 1}, {"label": "Don't know", "score": 3}]}
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Follow-up questions",
+      "questions": [
+        {"id": "C-P1", "text": "Roughly how many people's information will be involved?", "type": "choice", "dimension": "data_sensitivity", "domains": ["Data Privacy"], "gate": "B1=Yes", "options": [{"label": "Under 100", "score": 1}, {"label": "100-10,000", "score": 2}, {"label": "10,000-100,000", "score": 3}, {"label": "Over 100,000", "score": 4}]},
+        {"id": "C-P2", "text": "Will it include sensitive details - health, financial, biometric, children's, or government ID information?", "type": "choice", "dimension": "data_sensitivity", "domains": ["Data Privacy"], "gate": "B1=Yes", "options": [{"label": "No", "score": 2}, {"label": "Don't know", "score": 3}, {"label": "Yes", "score": 4}]},
+        {"id": "C-C1", "text": "How damaging would it be if that confidential information were leaked or stolen?", "type": "choice", "dimension": "data_sensitivity", "domains": ["Cybersecurity"], "gate": "B2=Yes", "options": [{"label": "Minor", "score": 1}, {"label": "Moderate", "score": 2}, {"label": "Serious", "score": 3}, {"label": "Severe - competitive, legal, or safety impact", "score": 4}]},
+        {"id": "C-IT1", "text": "Which best describes the access they'll have?", "type": "choice", "dimension": "system_access", "domains": ["Cybersecurity"], "gate": "B3=Yes", "options": [{"label": "Only their own tools that we log in to", "score": 1}, {"label": "They can view our data or systems", "score": 2}, {"label": "They can change settings or data", "score": 3}, {"label": "They can administer or control core systems", "score": 4}]},
+        {"id": "C-IT2", "text": "Will they connect to your internal network or install software on your devices?", "type": "choice", "dimension": "system_access", "domains": ["Cybersecurity"], "gate": "B3=Yes", "options": [{"label": "No", "score": 1}, {"label": "Don't know", "score": 3}, {"label": "Yes", "score": 4}]},
+        {"id": "C-O1", "text": "If the service went down, what would the impact be?", "type": "choice", "dimension": "business_criticality", "domains": ["Operational Resilience"], "gate": "B4=Yes", "options": [{"label": "Inconvenient", "score": 1}, {"label": "Noticeable disruption", "score": 2}, {"label": "Customers or regulators affected", "score": 3}, {"label": "Serious harm, safety, or major financial impact", "score": 4}]},
+        {"id": "C-O2", "text": "How long could you manage without it before it becomes a serious problem?", "type": "choice", "dimension": "business_criticality", "domains": ["Operational Resilience"], "gate": "B4=Yes", "options": [{"label": "Weeks", "score": 1}, {"label": "A few days", "score": 2}, {"label": "Hours", "score": 3}, {"label": "Immediately - no tolerance", "score": 4}]},
+        {"id": "C-A1", "text": "Will they interact with government officials, or operate in higher-risk countries, on your behalf?", "type": "choice", "dimension": "regulatory_exposure", "domains": ["ABAC"], "gate": "B5=Yes", "options": [{"label": "No", "score": 1}, {"label": "Don't know", "score": 3}, {"label": "Yes", "score": 4}]},
+        {"id": "C-A2", "text": "Will they handle money, payments, or sales in your name?", "type": "choice", "dimension": "regulatory_exposure", "domains": ["ABAC"], "gate": "B5=Yes", "options": [{"label": "No", "score": 1}, {"label": "Yes", "score": 3}]},
+        {"id": "C-F1", "text": "Do you know who their main subcontractors are and where they're based?", "type": "choice", "dimension": "concentration", "domains": ["Fourth-Party", "Supply Chain"], "gate": "B6=Yes/Don't know", "options": [{"label": "Yes, documented", "score": 1}, {"label": "Roughly", "score": 2}, {"label": "No", "score": 3}]},
+        {"id": "C-AI1", "text": "Could those automated decisions significantly affect people - for example credit, hiring, eligibility, or access to a service?", "type": "choice", "dimension": "regulatory_exposure", "domains": ["AI/Model Risk"], "gate": "B8=Yes", "options": [{"label": "No", "score": 2}, {"label": "Don't know", "score": 3}, {"label": "Yes", "score": 4}]},
+        {"id": "C-PH1", "text": "Will they access sensitive or restricted areas - server rooms, secure storage, or customer sites?", "type": "choice", "dimension": "system_access", "domains": ["Physical Security"], "gate": "B7=Yes", "options": [{"label": "No", "score": 1}, {"label": "Yes", "score": 3}]},
+        {"id": "C-G1", "text": "Which best describes where your information will be handled?", "type": "choice", "dimension": "geographic", "domains": ["Data Privacy"], "gate": "B9=Yes/Don't know", "options": [{"label": "Other low-risk countries (US, Canada, Australia)", "score": 2}, {"label": "A mix including higher-risk countries", "score": 3}, {"label": "Higher-risk or unknown locations", "score": 4}]},
+        {"id": "C-E1", "text": "Does this supplier sit in a higher-risk category for labour, environmental, or ethical concerns - for example overseas manufacturing, raw materials, or low-wage labour?", "type": "choice", "dimension": null, "domains": ["ESG", "Supply Chain"], "gate": null, "options": [{"label": "No", "score": 1}, {"label": "Don't know", "score": 2}, {"label": "Yes", "score": 3}]},
+        {"id": "C-FIN1", "text": "Is this a small, early-stage, or financially uncertain company that you'd be relying on heavily?", "type": "choice", "dimension": null, "domains": ["Financial"], "gate": null, "options": [{"label": "No", "score": 1}, {"label": "Don't know", "score": 2}, {"label": "Yes", "score": 3}]},
+        {"id": "C-CON1", "text": "If you needed to switch, are there realistic alternative suppliers?", "type": "choice", "dimension": "concentration", "domains": ["Concentration", "Supply Chain"], "gate": null, "options": [{"label": "Several", "score": 1}, {"label": "A few", "score": 2}, {"label": "Very few", "score": 3}, {"label": "None - they're effectively the only option", "score": 4}]}
+      ]
+    }
+  ]
+}
