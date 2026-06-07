@@ -1,0 +1,26 @@
+name: Validate Skills
+
+# Validates every SKILL.md in the repo (frontmatter, description length,
+# referenced files, evals JSON) on each push and pull request to main.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate skills
+        run: python scripts/validate_skills.py
