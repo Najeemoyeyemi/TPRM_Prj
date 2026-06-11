@@ -1,0 +1,2188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TPRM Lifecycle Platform</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --soft:#f8fafc; --brand:#4338ca; --brand2:#6366f1; --brandink:#eef2ff;
+    --ok:#16a34a; --low:#16a34a; --med:#d97706; --high:#ea580c; --crit:#dc2626; --min:#0891b2;
+    --chip:#eef2ff; --chipink:#3730a3; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+    --t1:#dc2626; --t2:#d97706; --t3:#16a34a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#eef1f6;line-height:1.5;font-size:15px}
+  a{color:var(--brand)}
+  header.app{background:linear-gradient(120deg,#312e81,#4338ca 55%,#6366f1);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 14px rgba(15,23,42,.18)}
+  header.app .logo{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.5px}
+  header.app h1{font-size:16px;margin:0;font-weight:700}
+  header.app .sub{font-size:12px;opacity:.85;margin-top:1px}
+  header.app .spacer{flex:1}
+  nav.tabs{display:flex;gap:4px;background:rgba(255,255,255,.12);padding:4px;border-radius:11px}
+  nav.tabs button{background:transparent;border:0;color:#e0e7ff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap}
+  nav.tabs button.active{background:#fff;color:var(--brand)}
+  main{max-width:1280px;margin:22px auto;padding:0 18px 80px}
+  .grid{display:grid;grid-template-columns:1fr 370px;gap:20px;align-items:start}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card h3{margin:18px 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .muted{color:var(--muted)}
+  .hr{height:1px;background:var(--line);margin:16px 0;border:0}
+  .side{position:sticky;top:88px}
+  @media(max-width:980px){.side{position:static}}
+  label.field{display:block;margin:10px 0}
+  label.field > span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  input[type=text],input[type=number],input[type=date],input[type=email],input[type=password],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-offset:0;border-color:transparent}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:160px}
+  button.btn{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:9px 15px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  button.btn:hover{filter:brightness(1.06)}
+  button.btn.ghost{background:#fff;color:var(--brand)}
+  button.btn.soft{background:var(--brandink);color:var(--brand);border-color:var(--brandink)}
+  button.btn.gray{background:#fff;color:var(--ink);border-color:var(--line)}
+  button.btn.danger{background:#fff;color:var(--crit);border-color:#fecaca}
+  button.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:8px}
+  .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  /* Stepper */
+  .stepper{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .stepper button{flex:1;min-width:150px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 14px;cursor:pointer;text-align:left;font-family:inherit}
+  .stepper button .sn{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stepper button .sl{font-size:14px;font-weight:700;margin-top:1px}
+  .stepper button .ss{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .stepper button.cur{border-color:var(--brand);background:var(--brandink)}
+  .stepper button.cur .sn,.stepper button.cur .sl{color:var(--brand)}
+  .stepper button.done{border-color:#bbf7d0;background:#f0fdf4}
+  .stepper button.locked{opacity:.55;cursor:not-allowed}
+  /* Question block */
+  .q{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;background:#fff;transition:border-color .15s}
+  .q.answered{border-color:#c7d2fe;background:#fbfcff}
+  .q .qhead{display:flex;align-items:flex-start;gap:10px}
+  .qid{font-weight:800;color:var(--brand);font-size:13px;background:var(--brandink);padding:3px 8px;border-radius:7px;white-space:nowrap}
+  .qtext{font-weight:600}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--soft);white-space:nowrap}
+  .badge.cond{color:#9a3412;background:#fff7ed;border-color:#fed7aa}
+  .opts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer}
+  .opt:hover{background:var(--soft)}
+  .opt.sel{border-color:var(--brand);background:var(--brandink)}
+  .opt input{margin-top:3px}
+  .opt .ol{flex:1}
+  .guide{margin-top:10px;font-size:13px;color:var(--muted);background:var(--soft);border:1px dashed var(--line);border-radius:9px;padding:10px;white-space:pre-wrap;display:none}
+  .guide.show{display:block}
+  .linklike{color:var(--brand);font-size:12.5px;cursor:pointer;font-weight:600;user-select:none}
+  .trigsum{margin-top:8px;font-size:12.5px;color:#475569;background:#f1f5f9;border-left:3px solid var(--brand2);border-radius:6px;padding:8px 10px;white-space:pre-wrap;display:none}
+  .trigsum.show{display:block}
+  /* Result widgets */
+  .ratingbox{border-radius:12px;padding:14px;color:#fff;text-align:center}
+  .ratingbox .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+  .ratingbox .val{font-size:26px;font-weight:800;margin:2px 0}
+  .ratingbox .score{font-size:12.5px;opacity:.95}
+  .meter{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin-top:9px}
+  .meter > i{display:block;height:100%;border-radius:999px}
+  .domchip{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin:7px 0;background:#fff}
+  .domchip .dn{font-weight:700;font-size:13.5px}
+  .domchip .note{font-size:12px;color:var(--muted);margin-top:2px}
+  .domchip .src{font-size:11px;color:#94a3b8;margin-top:3px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+  .pill.auto{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .pill.warn{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+  .pill.bad{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+  .pill.gray{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:18px;border:1px dashed var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  tr:hover td{background:var(--soft)}
+  .tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px}
+  /* Checkbox chip groups */
+  .checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .checks label{font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:4px 8px;background:#fff;cursor:pointer;display:flex;gap:5px;align-items:center}
+  .checks label.on{background:var(--brandink);border-color:var(--brand);color:var(--brand);font-weight:600}
+  /* Tier preview */
+  .tierbox{border-radius:12px;padding:14px;color:#fff;text-align:center}
+  .tierbox .val{font-size:24px;font-weight:800}
+  .tierbox .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+  .breakdown{font-size:12.5px;margin-top:10px}
+  .breakdown .br{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .breakdown .br b{font-weight:600}
+  /* Connector cards */
+  .conn{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;background:#fff}
+  .conn .ch{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .conn .cn{font-weight:700;font-size:14.5px}
+  .conn .ctype{font-size:11px;font-weight:700;color:#3730a3;background:#eef2ff;border-radius:999px;padding:2px 9px}
+  .conn .cstat{margin-left:auto}
+  .conn .cgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+  @media(max-width:760px){.conn .cgrid{grid-template-columns:1fr}}
+  .gate{border-radius:11px;padding:12px 14px;font-size:13.5px;margin-bottom:14px;border:1px solid}
+  .gate.req{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+  .gate.no{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+  .gate.eddq{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+  .gate.ddq{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+  /* Side summary */
+  .sumrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .sumrow .sl{color:var(--muted);font-weight:600}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:30px 14px;overflow:auto}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:780px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .modal .mh h3{margin:0;font-size:16px}
+  .modal .mb{padding:18px 20px;max-height:70vh;overflow:auto}
+  .modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+  .x{cursor:pointer;border:0;background:#f1f5f9;width:32px;height:32px;border-radius:8px;font-size:18px;color:var(--muted)}
+  .sub-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;background:var(--soft)}
+  .opt-edit{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:start;margin-bottom:8px}
+  .cond-row{display:grid;grid-template-columns:1fr 110px 1fr 34px;gap:8px;align-items:center;margin-bottom:7px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:200;opacity:0;transition:opacity .2s, transform .2s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi .k{flex:1;min-width:110px;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;background:#fff}
+  .kpi .k b{display:block;font-size:22px}
+  .kpi .k span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .hide{display:none!important}
+  .note-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:9px;padding:10px 12px;font-size:13px}
+  .help-list{font-size:14px}
+  .help-list li{margin:6px 0}
+  code.k{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px}
+  #report{display:none}
+  @media print{
+    header.app,nav.tabs,.side,.btnbar,.app-only,.no-print,.stepper{display:none!important}
+    body{background:#fff}
+    main{margin:0;max-width:none;padding:0}
+    #report{display:block!important;padding:24px}
+    .view{display:none!important}
+    .rep-h{display:flex;justify-content:space-between;border-bottom:3px solid var(--brand);padding-bottom:10px;margin-bottom:14px}
+    .rep-section{margin:16px 0;page-break-inside:avoid}
+    table{font-size:12px}
+  }
+  #report .rep-h{display:flex;justify-content:space-between;border-bottom:3px solid var(--brand);padding-bottom:10px;margin-bottom:14px}
+  #report .rep-section{margin:16px 0}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="logo" id="brandLogo">TPRM</div>
+  <div>
+    <h1 id="brandTitle">TPRM Lifecycle Platform</h1>
+    <div class="sub" id="brandSub">Tiering · Inherent Risk · Screening · Due Diligence</div>
+  </div>
+  <div class="spacer"></div>
+  <nav class="tabs">
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="assess">Assessment</button>
+    <button data-view="builder">Builder</button>
+    <button data-view="help">Help</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section id="view-dashboard" class="view">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <h2>Third-Party Portfolio</h2>
+        <div class="btnbar">
+          <button class="btn" id="newVendorBtn">+ New third-party assessment</button>
+          <button class="btn ghost sm" id="exportAllBtn">Export all (JSON)</button>
+          <button class="btn gray sm" id="importRecordsBtn">Import records</button>
+        </div>
+      </div>
+      <div class="kpi" style="margin-top:14px">
+        <div class="k"><b id="kVendors">0</b><span>Third parties</span></div>
+        <div class="k"><b id="kTier1">0</b><span>Tier 1</span></div>
+        <div class="k"><b id="kScreen">0</b><span>Screening pending</span></div>
+        <div class="k"><b id="kDdq">0</b><span>DDQ / EDDQ open</span></div>
+        <div class="k"><b id="kDone">0</b><span>Completed</span></div>
+      </div>
+      <div id="dashTable" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ============ ASSESSMENT (4-stage wizard) ============ -->
+  <section id="view-assess" class="view hide">
+    <div class="stepper" id="stepper">
+      <button data-stage="1"><div class="sn">Stage 1</div><div class="sl">Profile &amp; Tiering</div><div class="ss" id="stepSub1">Vendor profile → Tier</div></button>
+      <button data-stage="2"><div class="sn">Stage 2</div><div class="sl">Inherent Risk (IRQ)</div><div class="ss" id="stepSub2">Tier-tailored questionnaire</div></button>
+      <button data-stage="3"><div class="sn">Stage 3</div><div class="sl">Screening</div><div class="ss" id="stepSub3">External risk intelligence</div></button>
+      <button data-stage="4"><div class="sn">Stage 4</div><div class="sl">Due Diligence</div><div class="ss" id="stepSub4">DDQ / Enhanced DDQ scope</div></button>
+    </div>
+
+    <div class="grid">
+      <div>
+        <!-- STAGE 1 -->
+        <div id="stage1" class="stage">
+          <div class="card">
+            <h2>Third-party company information</h2>
+            <div class="row">
+              <label class="field"><span>Company name *</span><input type="text" id="c_name" placeholder="e.g. Acme Cloud Ltd"/></label>
+              <label class="field"><span>Country (HQ)</span><input type="text" id="c_country" placeholder="e.g. United Kingdom"/></label>
+              <label class="field"><span>Employee count</span><select id="c_employees"><option value="">— Select —</option><option>1–250</option><option>251–500</option><option>501–1,000</option><option>1,001–5,000</option><option>5,001–10,000</option><option>10,000+</option></select></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Contact name</span><input type="text" id="c_contactName"/></label>
+              <label class="field"><span>Contact email</span><input type="email" id="c_contactEmail"/></label>
+              <label class="field"><span>Contact number</span><input type="text" id="c_contactPhone"/></label>
+            </div>
+            <h3>Engagement</h3>
+            <div class="row">
+              <label class="field"><span>Service / Engagement</span><input type="text" id="e_service" placeholder="e.g. Payroll SaaS"/></label>
+              <label class="field"><span>Service Owner (assessor)</span><input type="text" id="e_owner"/></label>
+              <label class="field"><span>Business unit</span><input type="text" id="e_bu"/></label>
+              <label class="field"><span>Assessment date</span><input type="date" id="e_date"/></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Vendor profile &amp; demographics</h2>
+            <p class="muted" style="margin-top:4px">These inputs drive the weighted tiering score. Weights and options are editable in the Builder.</p>
+            <label class="field"><span>Nature of business</span><input type="text" id="p_nature" placeholder="e.g. HR software provider"/></label>
+            <label class="field"><span>Product / service description</span><textarea id="p_desc" placeholder="What will this third party do for the organisation?"></textarea></label>
+            <div id="tierFactors"></div>
+            <label class="field"><span>Regulatory obligations (optional — select all that apply)</span><span class="checks" id="p_regs"></span></label>
+            <label class="field"><span>Other regulatory obligations (optional)</span><input type="text" id="p_regnotes" placeholder="e.g. local licensing requirements"/></label>
+          </div>
+
+          <div class="card">
+            <h2>Tier result</h2>
+            <div id="tierPreview"></div>
+            <div class="btnbar"><button class="btn" id="s1Next">Save &amp; continue to IRQ →</button></div>
+          </div>
+        </div>
+
+        <!-- STAGE 2 -->
+        <div id="stage2" class="stage hide">
+          <div class="card">
+            <div id="irqTierBanner"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+              <h2 id="qTitle">Inherent Risk Questionnaire</h2>
+              <span class="muted" id="qProgress"></span>
+            </div>
+            <div id="questions"></div>
+            <div class="btnbar">
+              <button class="btn gray" id="s2Back">← Back to Tiering</button>
+              <button class="btn" id="s2Next">Continue to Screening →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAGE 3 -->
+        <div id="stage3" class="stage hide">
+          <div class="card">
+            <h2>Screening &amp; risk sensing</h2>
+            <div id="scrGate" style="margin-top:10px"></div>
+            <div id="connectors"></div>
+            <h3>Screening outcome</h3>
+            <div class="row">
+              <label class="field"><span>Overall screening verdict</span>
+                <select id="sc_verdict"><option value="">— Not concluded —</option><option>Clear</option><option>Conditional</option><option>Adverse</option></select>
+              </label>
+            </div>
+            <label class="field"><span>Screening summary / analyst notes</span><textarea id="sc_summary" placeholder="Key findings from ratings platforms, credit reports, sanctions and adverse media checks…"></textarea></label>
+            <div class="btnbar">
+              <button class="btn gray" id="s3Back">← Back to IRQ</button>
+              <button class="btn" id="s3Next">Continue to Due Diligence →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAGE 4 -->
+        <div id="stage4" class="stage hide">
+          <div class="card">
+            <h2>Due diligence scope</h2>
+            <div id="ddqRouteBanner" style="margin-top:10px"></div>
+            <div id="ddqTable"></div>
+            <div id="eddqEvidence"></div>
+            <div class="btnbar">
+              <button class="btn gray" id="s4Back">← Back to Screening</button>
+              <button class="btn" id="completeBtn">Mark assessment complete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDE SUMMARY -->
+      <div class="side">
+        <div class="card">
+          <h2 style="margin-bottom:10px">Live summary</h2>
+          <div id="sideTier"></div>
+          <div id="sideIrq" style="margin-top:10px"></div>
+          <div style="margin-top:10px">
+            <div class="sumrow"><span class="sl">Screening</span><span id="sideScr">—</span></div>
+            <div class="sumrow"><span class="sl">Due diligence track</span><span id="sideDdq">—</span></div>
+            <div class="sumrow"><span class="sl">Stage</span><span id="sideStage">—</span></div>
+          </div>
+          <div class="btnbar app-only" style="margin-top:14px">
+            <button class="btn" id="saveBtn">Save record</button>
+            <button class="btn ghost sm" id="pdfBtn">PDF report</button>
+          </div>
+          <div class="btnbar app-only">
+            <button class="btn gray sm" id="csvBtn">CSV</button>
+            <button class="btn gray sm" id="jsonBtn">JSON</button>
+            <button class="btn gray sm" id="checklistBtn">DDQ checklist CSV</button>
+            <button class="btn gray sm" id="clearBtn">New / Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BUILDER ============ -->
+  <section id="view-builder" class="view hide">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <h2>Platform Builder</h2>
+        <div class="btnbar">
+          <button class="btn soft sm" id="importExcelBtn">Update IRQ from Excel (.xlsx)</button>
+          <button class="btn gray sm" id="importJsonBtn">Import config JSON</button>
+          <button class="btn gray sm" id="exportJsonBtn">Export config JSON</button>
+          <button class="btn danger sm" id="resetSchemaBtn">Reset to default</button>
+        </div>
+      </div>
+      <p class="muted">Edit the tiering model, IRQ, gating rules, screening connectors and DDQ catalogue here — changes apply immediately and are saved in this browser. Export the JSON to version-control or share.</p>
+      <h3>Platform details</h3>
+      <div class="row">
+        <label class="field"><span>Title</span><input type="text" id="b_title"/></label>
+        <label class="field"><span>Organisation</span><input type="text" id="b_org"/></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Version</span><input type="text" id="b_version"/></label>
+        <label class="field"><span>IRQ answered by</span><input type="text" id="b_answeredBy"/></label>
+        <label class="field"><span>Last updated</span><input type="text" id="b_updated" placeholder="YYYY-MM-DD"/></label>
+      </div>
+      <div class="btnbar"><button class="btn sm" id="saveMetaBtn">Save details</button></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>Tiering model (weighted scoring)</h2>
+        <button class="btn sm" id="addFactorBtn">+ Add factor</button>
+      </div>
+      <p class="muted">Tier score = Σ (factor points × weight). Multi-select factors aggregate by max or sum (certifications use a negative sum, floored).</p>
+      <div id="builderTierFactors"></div>
+      <h3>Tier thresholds</h3>
+      <div id="builderThresholds"></div>
+    </div>
+
+    <div class="card">
+      <h2>Gating rules</h2>
+      <p class="muted">How the tier and inherent-risk rating drive screening and the due-diligence track.</p>
+      <h3>Screening required when inherent risk is at least…</h3>
+      <div class="row">
+        <label class="field"><span>Tier 1</span><select id="g_scr_1"></select></label>
+        <label class="field"><span>Tier 2</span><select id="g_scr_2"></select></label>
+        <label class="field"><span>Tier 3</span><select id="g_scr_3"></select></label>
+      </div>
+      <h3>Enhanced DDQ (EDDQ) triggers</h3>
+      <div class="row" style="align-items:flex-end">
+        <label class="field"><span>Tiers always routed to EDDQ</span>
+          <span class="checks" style="margin-top:6px">
+            <label id="lg_t1"><input type="checkbox" id="g_eddq_t1"/>Tier 1</label>
+            <label id="lg_t2"><input type="checkbox" id="g_eddq_t2"/>Tier 2</label>
+            <label id="lg_t3"><input type="checkbox" id="g_eddq_t3"/>Tier 3</label>
+          </span>
+        </label>
+        <label class="field"><span>EDDQ when rating at least</span><select id="g_eddq_band"></select></label>
+        <label class="field"><span>EDDQ on adverse screening</span><select id="g_eddq_adv"><option value="yes">Yes</option><option value="no">No</option></select></label>
+      </div>
+      <div class="btnbar"><button class="btn sm" id="saveGatingBtn">Save gating rules</button></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>Screening connectors</h2>
+        <button class="btn sm" id="addConnBtn">+ Add connector</button>
+      </div>
+      <p class="muted">Risk-sensing integrations (cyber ratings, credit, sanctions). API tokens are stored only in this browser and are never included in config exports.</p>
+      <div id="builderConnectors"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>IRQ questions</h2>
+        <button class="btn sm" id="addQBtn">+ Add question</button>
+      </div>
+      <p class="muted">Each question can be limited to specific tiers (tier-tailored IRQ).</p>
+      <div id="builderQuestions"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>Cross-question rules</h2>
+        <button class="btn sm" id="addRuleBtn">+ Add rule</button>
+      </div>
+      <p class="muted">Rules that trigger DDQ domains based on combinations of answers (evaluated in addition to per-option triggers).</p>
+      <div id="builderRules"></div>
+    </div>
+
+    <div class="card">
+      <h2>DDQ domains / focus areas</h2>
+      <p class="muted">The catalogue of due-diligence domains an answer can scope in.</p>
+      <div id="builderDomains"></div>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="newDomain" placeholder="New domain name"/>
+        <button class="btn sm" id="addDomainBtn" style="flex:0 0 auto">Add domain</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Inherent risk rating bands</h2>
+      <p class="muted">Score is the sum of selected option scores (tier-visible questions only). Bands map a total score to a rating.</p>
+      <div id="builderBands"></div>
+      <button class="btn sm" id="addBandBtn" style="margin-top:8px">+ Add band</button>
+    </div>
+
+    <div class="card">
+      <h2>EDDQ mandatory evidence</h2>
+      <p class="muted">One item per line. Required for every third party routed to the Enhanced DDQ.</p>
+      <textarea id="b_eddqEvidence" style="min-height:140px"></textarea>
+      <div class="btnbar"><button class="btn sm" id="saveEddqBtn">Save evidence list</button></div>
+    </div>
+  </section>
+
+  <!-- ============ HELP ============ -->
+  <section id="view-help" class="view hide">
+    <div class="card">
+      <h2>How this platform works</h2>
+      <ul class="help-list">
+        <li><b>Stage 1 — Profile &amp; Tiering.</b> Capture company info, vendor profile/demographics and operational factors. A weighted scoring model assigns <b>Tier 1 / 2 / 3</b> (materiality, data sensitivity, criticality, substitutability, geography, fourth parties; certifications reduce the score).</li>
+        <li><b>Stage 2 — Inherent Risk (IRQ).</b> The tier determines which IRQ questions are asked. Answers produce the inherent-risk rating and scope in DDQ domains via trigger logic.</li>
+        <li><b>Stage 3 — Screening.</b> Gating rules decide if screening is needed (e.g. Tier 1 always; Tier 2 at Medium+; Tier 3 at High+). Pull or enter cyber ratings (BitSight, SecurityScorecard), credit ratings and sanctions/adverse-media results, then record an overall verdict.</li>
+        <li><b>Stage 4 — Due Diligence.</b> Routing decides <b>EDDQ</b> (Tier 1, High/Critical rating, or adverse screening → all domains + mandatory evidence), <b>DDQ</b> (IRQ-scoped domains) or <b>none</b>. Track per-domain status and evidence.</li>
+        <li><b>Dashboard</b> — the portfolio pipeline. Records are stored in this browser (localStorage); use Export all to back up.</li>
+        <li><b>Builder</b> — edit every part of the model without touching code: tiering factors/weights/thresholds, gating, connectors, IRQ questions (incl. tier applicability), rules, domains, bands and EDDQ evidence.</li>
+      </ul>
+      <h3>Screening integrations</h3>
+      <ul class="help-list">
+        <li>Each connector can call its API live (token stored only in this browser). Browsers block many of these calls from a local file (CORS) — if a fetch fails, use <b>manual entry</b>: enter the score/grade from the platform's portal or report. Flag thresholds auto-evaluate either way.</li>
+        <li>API tokens are never included in config or record exports.</li>
+      </ul>
+      <h3>Updating after the IRQ changes</h3>
+      <ul class="help-list">
+        <li><b>Update from Excel (.xlsx)</b> — re-import an updated IRQ spreadsheet. Rows are matched by Question ID; question text/options/guidance refresh while trigger rules, scores and tier settings are preserved for matching IDs.</li>
+        <li><b>Import / Export JSON</b> — the entire platform configuration is one JSON document.</li>
+      </ul>
+      <p class="muted">Excel format: first data columns in order — <code class="k">Q. No.</code>, <code class="k">Risk Area</code>, <code class="k">Question</code>, <code class="k">Configuration</code>, <code class="k">Response Type</code>, <code class="k">Response Options</code>, <code class="k">User Guidance</code>, <code class="k">Trigger Logic</code>, <code class="k">Scoring</code>.</p>
+    </div>
+  </section>
+</main>
+
+<div id="report"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="mh"><h3 id="modalTitle">Edit</h3><button class="x" id="modalX">&times;</button></div>
+    <div class="mb" id="modalBody"></div>
+    <div class="mf" id="modalFoot"></div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" class="hide"/>
+<input type="file" id="excelInput" accept=".xlsx,.xls" class="hide"/>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   DEFAULT SCHEMA — TPRM lifecycle configuration
+   ============================================================ */
+/* SCHEMA-START */
+const DEFAULT_SCHEMA = {
+  meta:{
+    title:"TPRM Lifecycle Platform",
+    org:"",
+    version:"2.0",
+    answeredBy:"Service Owner (SO)",
+    updated:"2026-06-11"
+  },
+
+  /* ---------- Stage 1: weighted tiering model ---------- */
+  tiering:{
+    factors:[
+      {id:"serviceType", label:"Service type", weight:1, multi:false, options:[
+        {value:"cloud", label:"Cloud Infrastructure", score:8},
+        {value:"tech", label:"Technology / SaaS", score:7},
+        {value:"data", label:"Data & Analytics", score:7},
+        {value:"fin", label:"Financial Services", score:6},
+        {value:"legal", label:"Legal & Compliance", score:5},
+        {value:"prof", label:"Professional Services", score:4},
+        {value:"log", label:"Logistics", score:3},
+        {value:"fac", label:"Facilities & Operations", score:2},
+        {value:"other", label:"Other", score:3}
+      ]},
+      {id:"dataTypes", label:"Type of data accessed / stored", weight:1.5, multi:true, aggregate:"max", options:[
+        {value:"auth", label:"Authentication credentials", score:10},
+        {value:"phi", label:"PHI (health data)", score:10},
+        {value:"pii", label:"PII (personal data)", score:9},
+        {value:"payroll", label:"Payroll / financial data", score:8},
+        {value:"ip", label:"Intellectual property", score:8},
+        {value:"hr", label:"Employee & HR data", score:7},
+        {value:"nonsens", label:"Non-sensitive business data only", score:1},
+        {value:"none", label:"No data access", score:0}
+      ]},
+      {id:"criticality", label:"Business criticality", weight:1.5, multi:false, options:[
+        {value:"critical", label:"Critical", score:10},
+        {value:"high", label:"High", score:7},
+        {value:"medium", label:"Medium", score:4},
+        {value:"low", label:"Low", score:1}
+      ]},
+      {id:"alternative", label:"Availability of alternative", weight:1, multi:false, options:[
+        {value:"sole", label:"Sole provider", score:10},
+        {value:"difficult", label:"Difficult (6+ months to replace)", score:7},
+        {value:"possible", label:"Possible (1–3 months to replace)", score:4},
+        {value:"easy", label:"Easy (can switch readily)", score:1}
+      ]},
+      {id:"fourthParty", label:"Fourth-party / subcontractor involvement", weight:0.8, multi:false, options:[
+        {value:"yes", label:"Yes", score:6},
+        {value:"unknown", label:"Unknown", score:4},
+        {value:"no", label:"No", score:0}
+      ]},
+      {id:"geography", label:"Geographical presence", weight:0.8, multi:false, options:[
+        {value:"highrisk", label:"Includes high-risk jurisdictions", score:8},
+        {value:"global", label:"Multiple regions (3+)", score:5},
+        {value:"regional", label:"Cross-border (2 regions)", score:3},
+        {value:"domestic", label:"Domestic only", score:1}
+      ]},
+      {id:"regulated", label:"Supports a regulated process / obligation", weight:0.5, multi:false, options:[
+        {value:"yes", label:"Yes", score:4},
+        {value:"no", label:"No", score:0}
+      ]},
+      {id:"certifications", label:"Certifications held (reduce tier score)", weight:1, multi:true, aggregate:"sum", floor:-5, options:[
+        {value:"iso27001", label:"ISO 27001", score:-2},
+        {value:"soc2", label:"SOC 2 Type II", score:-2},
+        {value:"iso22301", label:"ISO 22301", score:-1},
+        {value:"pcidss", label:"PCI DSS", score:-1},
+        {value:"ce", label:"Cyber Essentials Plus", score:-1},
+        {value:"none", label:"None", score:0}
+      ]}
+    ],
+    thresholds:[ {tier:1, min:38}, {tier:2, min:20}, {tier:3, min:0} ]
+  },
+
+  /* ---------- Gating: tier + rating → screening & DDQ track ---------- */
+  gating:{
+    screening:{ "1":"Always", "2":"Medium", "3":"High" },
+    eddq:{ tiers:[1], minRating:"High", onAdverse:true }
+  },
+
+  /* ---------- Stage 3: screening connectors ---------- */
+  screening:{
+    connectors:[
+      {id:"bitsight", name:"BitSight", type:"Cyber rating", enabled:true,
+       endpoint:"https://api.bitsighttech.com/ratings/v1/companies/{ident}",
+       identLabel:"BitSight company GUID", authHeader:"Authorization", authPrefix:"Basic",
+       scorePath:"rating", flagBelow:650, flagGrades:[],
+       help:"Advanced (650–740) / Intermediate / Basic. Scores below 650 are flagged."},
+      {id:"ssc", name:"SecurityScorecard", type:"Cyber rating", enabled:true,
+       endpoint:"https://api.securityscorecard.io/companies/{ident}",
+       identLabel:"Primary domain (e.g. acme.com)", authHeader:"Authorization", authPrefix:"Token",
+       scorePath:"score", gradePath:"grade", flagBelow:70, flagGrades:["D","F"],
+       help:"A–F letter grades; D/F or score <70 flagged."},
+      {id:"credit", name:"Credit rating (D&B / Creditsafe)", type:"Financial", enabled:true,
+       endpoint:"", identLabel:"DUNS / company number", authHeader:"Authorization", authPrefix:"",
+       scorePath:"", gradePath:"", flagBelow:null, flagGrades:["C","D","E"],
+       help:"Enter the failure score / rating band from the credit report. Bands C–E flagged."},
+      {id:"sanctions", name:"Sanctions & adverse media", type:"Compliance", enabled:true,
+       endpoint:"", identLabel:"Legal entity name", authHeader:"Authorization", authPrefix:"",
+       scorePath:"", gradePath:"", flagBelow:null, flagGrades:["Hit"],
+       help:"Record 'Clear' or 'Hit' from your sanctions / adverse media screening (e.g. OpenSanctions, World-Check)."}
+    ]
+  },
+
+  /* ---------- Stage 4: EDDQ mandatory evidence ---------- */
+  eddqEvidence:[
+    "Latest SOC 2 Type II report (or ISO 27001 certificate + Statement of Applicability)",
+    "Most recent penetration test executive summary",
+    "Business continuity / DR test results (last 12 months)",
+    "Cyber insurance certificate",
+    "Information security policy set",
+    "Sub-processor / fourth-party register",
+    "Data processing agreement (DPA) incl. transfer safeguards",
+    "Exit / termination assistance plan"
+  ],
+
+  /* ---------- DDQ domains ---------- */
+  domains:[
+    {name:"Cyber / InfoSec", desc:"Parent domain — in scope whenever the TP touches the organisation's environment, systems or data.", auto:false},
+    {name:"Network & Communications Security", desc:"Firewalls, segmentation, pen testing, vulnerability scanning, malware protection.", auto:false},
+    {name:"Identity & Access Management", desc:"User & privileged access administration, least privilege, remote access, MFA.", auto:false},
+    {name:"Cloud Security", desc:"Cloud usage policy, cloud IAM, privileged cloud access, logical segregation.", auto:false},
+    {name:"Security Governance", desc:"Leadership accountability, policy, regulatory mapping, security assurance.", auto:true},
+    {name:"People Management", desc:"Screening, awareness training, phishing simulations, leaver controls.", auto:true},
+    {name:"Data Privacy", desc:"Data protection policy, DPIA, breach response, transfers, RoPA, sub-processors.", auto:false},
+    {name:"Artificial Intelligence", desc:"AI governance, model risk, bias, AI-specific data protection (DPIA).", auto:false},
+    {name:"Fourth Parties", desc:"Sub-processor / sub-contractor due diligence and flow-down obligations.", auto:false},
+    {name:"System Management", desc:"Patching, change management, backups, EoL, asset inventory, endpoint protection.", auto:false},
+    {name:"Threat & Incident Management", desc:"Logging & monitoring, SIEM, incident response, DDoS, database activity monitoring.", auto:false},
+    {name:"Information Management", desc:"Data classification, retention & deletion, DLP, data quality, secure destruction.", auto:false},
+    {name:"Physical & Environmental Security", desc:"Premises access, CCTV, visitor control, fire suppression, power protection.", auto:false},
+    {name:"System Development", desc:"Secure SDLC, security testing, source code protection, open-source controls.", auto:false}
+  ],
+
+  /* ---------- IRQ questions (tier-tailored via q.tiers) ---------- */
+  questions:[
+    {
+      id:"CYB.01", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2,3],
+      text:"Will the Third-party require access to the organisation's environment that may lead to a security compromise?",
+      guidance:"Select the option representing the minimum necessary level of access for the TP to perform its service.\n1) Access to the organisation's network: direct, persistent connectivity to internal network (VPN, leased line, on-site).\n2) Access to the organisation's systems: logs into / interacts with organisation-owned applications, servers or databases.\n3) Access to system hosting Data on behalf of the organisation: TP hosts cloud/SaaS/own servers that contain or process the organisation's data.\n4) Access to the organisation's data only: interacts solely with data via secure mechanisms (APIs, encrypted transfers) without network/system access.",
+      triggerSummary:"Responses 1–4 put the Cyber/InfoSec domain in scope.\n• Option 1 → Network & Communications Security + Identity & Access Management\n• Option 2 → Identity & Access Management\n• Option 3 → Identity & Access Management + Cloud Security\n• Option 4 → IAM only if CYB.02 = Yes/Unsure (see rules)\nSecurity Governance and People Management are auto-triggered whenever Cyber is in scope.",
+      showIf:[],
+      options:[
+        {value:"1", label:"Access to the organisation's network", score:4, triggers:[{domain:"Cyber / InfoSec"},{domain:"Network & Communications Security"},{domain:"Identity & Access Management"}]},
+        {value:"2", label:"Access to the organisation's systems", score:3, triggers:[{domain:"Cyber / InfoSec"},{domain:"Identity & Access Management"}]},
+        {value:"3", label:"Access to system hosting Data on behalf of the organisation (e.g. Cloud platform, SaaS)", score:3, triggers:[{domain:"Cyber / InfoSec"},{domain:"Identity & Access Management"},{domain:"Cloud Security"}]},
+        {value:"4", label:"Access to the organisation's data only", score:2, triggers:[{domain:"Cyber / InfoSec"}]},
+        {value:"5", label:"Not Applicable", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.02", riskArea:"Cyber", config:"Conditional", responseType:"single", tiers:[1,2,3],
+      text:"Will the organisation's data be sent outside of its Physical Environment, Systems, Network?",
+      guidance:"Ascertains the logical/geographical boundaries within which the organisation's data is stored, processed and transmitted. 'Physical Environment, Systems, Network' includes the organisation's owned cloud environment.",
+      triggerSummary:"Asked only if CYB.01 ≠ 'Not Applicable'.\n• Yes / Unsure → Data Privacy (incl. DP.08 transfer safeguards) + Threat & Incident Management (TIM.09 DB activity monitoring)\n• Combined with CYB.03 = Yes → AI.05 DPIA (see rules)\n• No → Data Privacy may still apply if CYB.01 is Options 1–3 (see rules)",
+      showIf:[{q:"CYB.01", op:"notin", vals:["5"]}],
+      options:[
+        {value:"Yes", label:"Yes", score:3, triggers:[{domain:"Data Privacy", note:"DP.08 — international transfer safeguards"},{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Data Privacy", note:"DP.08 — international transfer safeguards"},{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]}
+      ]
+    },
+    {
+      id:"CYB.03", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2,3],
+      text:"Will your organisation use any form of AI (including any AI models or AI systems) in connection with this engagement with the organisation?",
+      guidance:"Identifies AI-specific risks (bias, data privacy, security vulnerabilities), regulatory/ethical compliance, transparency of the AI's role, and contractual obligations for data governance.",
+      triggerSummary:"• Yes → Artificial Intelligence domain\n• Yes + CYB.02 = Yes/Unsure → AI.05 DPIA for AI processing PII (see rules)\n• No → AI domain not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"Artificial Intelligence"}]},
+        {value:"No", label:"No", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.04", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2,3],
+      text:"Will the delivery of services to the organisation involve the use of any critical sub-processors, sub-contractors, or other third parties ('Fourth Parties')?",
+      guidance:"Applies where the supplier engages other third parties (the organisation's fourth parties) that handle/process/store the organisation's data, or manage IT infrastructure used to provide services to the organisation.",
+      triggerSummary:"• Yes → Fourth Parties domain (FP.01–FP.06) + Data Privacy DP.09 (sub-processing agreements)\n• No → Fourth Parties not deployed; DP.09 not asked",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"Fourth Parties"},{domain:"Data Privacy", note:"DP.09 — sub-processing agreements (GDPR Art.28)"}]},
+        {value:"No", label:"No", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.05", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2],
+      text:"Who manages the IT infrastructure / devices used for delivery of the service?",
+      guidance:"1) The organisation — the organisation's internal IT manages all aspects (OS, apps, security software, configuration, patching), including the organisation's own cloud environment (unless the TP is the organisation's CSP).\n2) Third-Party — the supplier/vendor performs management, maintenance, security and updates (even if they use a cloud provider).",
+      triggerSummary:"• The organisation → no additional focus areas\n• Third-Party / Unsure → Network & Communications Security, Identity & Access Management, System Management, Threat & Incident Management, Information Management, Physical & Environmental Security\nCloud Security is triggered separately via CYB.01 = Option 3, not here.",
+      showIf:[],
+      options:[
+        {value:"Internal", label:"The organisation (internal IT)", score:0, triggers:[]},
+        {value:"Third-Party", label:"Third-Party", score:3, triggers:[{domain:"Network & Communications Security"},{domain:"Identity & Access Management"},{domain:"System Management"},{domain:"Threat & Incident Management"},{domain:"Information Management"},{domain:"Physical & Environmental Security"}]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Network & Communications Security"},{domain:"Identity & Access Management"},{domain:"System Management"},{domain:"Threat & Incident Management"},{domain:"Information Management"},{domain:"Physical & Environmental Security"}]}
+      ]
+    },
+    {
+      id:"CYB.06", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2],
+      text:"Does the Third party provide software development services or use its own software or web applications for the provision of engaged services to the organisation?",
+      guidance:"Focuses on whether the TP creates bespoke software, customisations or enhancements specifically for the organisation.",
+      triggerSummary:"• Yes / Unsure → System Development domain (SYSD.01–SYSD.07). SYSD.07 (open-source controls) is conditional on OSS use.\n• No → System Development not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"System Development"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:1, triggers:[{domain:"System Development"}]}
+      ]
+    },
+    {
+      id:"CYB.07", riskArea:"Cyber", config:"Always", responseType:"single", tiers:[1,2],
+      text:"Does the Third party host externally facing systems as part of the service?",
+      guidance:"A system is externally facing if it can be accessed from outside the supplier's (or the organisation's) internal network, typically via the public internet.\nYes — any part (app, DB, server, network device, API) is directly accessible from the public internet.\nNo — entirely hosted within the TP's private network, accessible only via a secure dedicated connection.",
+      triggerSummary:"• Yes / Unsure → Network & Communications Security (incl. NCS.07 WAF & NCS.08 DMZ), Information Management, Threat & Incident Management, Identity & Access Management\n• Combined with CYB.02 = Yes/Unsure → TIM.09 database activity monitoring (see rules)\n• No → WAF/DMZ not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:3, triggers:[{domain:"Network & Communications Security", note:"NCS.07 WAF & NCS.08 DMZ — internet-facing controls"},{domain:"Information Management"},{domain:"Threat & Incident Management"},{domain:"Identity & Access Management"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Network & Communications Security", note:"NCS.07 WAF & NCS.08 DMZ — internet-facing controls"},{domain:"Information Management"},{domain:"Threat & Incident Management"},{domain:"Identity & Access Management"}]}
+      ]
+    }
+  ],
+
+  rules:[
+    {label:"Cyber in scope → auto Security Governance & People Management", when:[{q:"CYB.01", op:"in", vals:["1","2","3","4"]}], then:[{domain:"Security Governance", note:"Auto-triggered (Cyber in scope)"},{domain:"People Management", note:"Auto-triggered (Cyber in scope)"}]},
+    {label:"Data-only access + data egress → Identity & Access Management", when:[{q:"CYB.01", op:"in", vals:["4"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Identity & Access Management"}]},
+    {label:"TP processes data (access 1–3) without egress → Data Privacy", when:[{q:"CYB.01", op:"in", vals:["1","2","3"]},{q:"CYB.02", op:"in", vals:["No"]}], then:[{domain:"Data Privacy", note:"TP processes the organisation's data"}]},
+    {label:"AI + data egress → AI DPIA", when:[{q:"CYB.03", op:"in", vals:["Yes"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Artificial Intelligence", note:"AI.05 — DPIA for AI processing PII"}]},
+    {label:"Internet-facing + data egress → DB activity monitoring", when:[{q:"CYB.07", op:"in", vals:["Yes","Unsure"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]}
+  ],
+
+  bands:[
+    {label:"Minimal", min:0, max:0, color:"#0891b2"},
+    {label:"Low", min:1, max:5, color:"#16a34a"},
+    {label:"Medium", min:6, max:10, color:"#d97706"},
+    {label:"High", min:11, max:14, color:"#ea580c"},
+    {label:"Critical", min:15, max:9999, color:"#dc2626"}
+  ]
+};
+/* SCHEMA-END */
+
+/* ============================================================
+   PURE ENGINE — no DOM. Extracted and unit-tested in Node.
+   ============================================================ */
+/* ENGINE-START */
+function matchCond(c, ans){
+  const a = ans[c.q];
+  if(a===undefined||a===null||a==="") return false;
+  const vals = c.vals||[];
+  switch(c.op){
+    case "in": return vals.includes(a);
+    case "notin": return !vals.includes(a);
+    case "eq": return a===vals[0];
+    case "neq": return a!==vals[0];
+    default: return false;
+  }
+}
+function isVisible(q, ans){
+  if(!q.showIf || !q.showIf.length) return true;
+  return q.showIf.every(c=>matchCond(c, ans));
+}
+function findOption(q, val){ return (q.options||[]).find(o=>o.value===val); }
+function inTier(q, tier){
+  const ts = q.tiers && q.tiers.length ? q.tiers : [1,2,3];
+  return !tier || ts.includes(Number(tier));
+}
+
+/* ---- Stage 1: weighted tiering ---- */
+function computeTier(schema, tA){
+  tA = tA||{};
+  const model = (schema.tiering)||{factors:[],thresholds:[]};
+  let score=0, max=0; const breakdown=[];
+  (model.factors||[]).forEach(f=>{
+    const w = Number(f.weight)||1;
+    const v = tA[f.id];
+    let pts=0, chosen="—", answeredF=false;
+    if(f.multi){
+      const vals = Array.isArray(v)? v : [];
+      const sel = (f.options||[]).filter(o=>vals.includes(o.value));
+      answeredF = vals.length>0;
+      if(f.aggregate==="sum") pts = sel.reduce((s,o)=>s+(Number(o.score)||0),0);
+      else pts = sel.length? Math.max(...sel.map(o=>Number(o.score)||0)) : 0;
+      if(f.floor!=null) pts = Math.max(pts, Number(f.floor));
+      chosen = sel.map(o=>o.label).join(", ")||"—";
+    } else {
+      const o = (f.options||[]).find(o=>o.value===v);
+      if(o){ pts = Number(o.score)||0; chosen = o.label; answeredF=true; }
+    }
+    let fmax;
+    if(f.multi && f.aggregate==="sum"){
+      const posSum = (f.options||[]).reduce((s,o)=>s+Math.max(0,Number(o.score)||0),0);
+      fmax = posSum;
+    } else {
+      fmax = Math.max(0, ...((f.options||[]).map(o=>Number(o.score)||0)), 0);
+    }
+    score += pts*w; max += fmax*w;
+    breakdown.push({id:f.id, label:f.label, chosen, points:Math.round(pts*w*10)/10, answered:answeredF});
+  });
+  score = Math.round(score*10)/10; max = Math.round(max*10)/10;
+  const ths = [...((model.thresholds)||[])].sort((a,b)=>Number(b.min)-Number(a.min));
+  let tier = ths.length? ths[ths.length-1].tier : 3;
+  for(const t of ths){ if(score>=Number(t.min)){ tier=t.tier; break; } }
+  const answeredCount = breakdown.filter(b=>b.answered).length;
+  return {score, max, tier:Number(tier), breakdown, answeredCount, factorCount:(model.factors||[]).length};
+}
+
+/* ---- Stage 2: IRQ (tier-filtered) ---- */
+function bandFor(schema, score){
+  const bands = schema.bands||[];
+  for(const b of bands){ if(score>=Number(b.min) && score<=Number(b.max)) return b; }
+  return bands.length? bands[bands.length-1] : {label:"—", color:"#64748b"};
+}
+function computeIRQ(schema, ans, tier){
+  ans = ans||{};
+  const domMap = {};
+  function addDom(name, note, src){
+    if(!name) return;
+    if(!domMap[name]) domMap[name]={notes:new Set(), sources:[]};
+    if(note) domMap[name].notes.add(note);
+    if(src) domMap[name].sources.push(src);
+  }
+  let score=0, answered=0;
+  const tierQs = (schema.questions||[]).filter(q=>inTier(q,tier));
+  const visibleQs = tierQs.filter(q=>isVisible(q,ans));
+  visibleQs.forEach(q=>{
+    const val = ans[q.id];
+    if(val===undefined||val==="") return;
+    answered++;
+    const opt = findOption(q,val);
+    if(!opt) return;
+    score += (Number(opt.score)||0) * (Number(q.weight)||1);
+    (opt.triggers||[]).forEach(t=> addDom(t.domain, t.note, {q:q.id, val:opt.label}));
+  });
+  (schema.rules||[]).forEach(r=>{
+    if((r.when||[]).length && r.when.every(c=>matchCond(c,ans))){
+      (r.then||[]).forEach(t=> addDom(t.domain, t.note, {q:"rule", val:r.label}));
+    }
+  });
+  const autoNames = new Set((schema.domains||[]).filter(d=>d.auto).map(d=>d.name));
+  const maxScore = tierQs.reduce((s,q)=> s + Math.max(0,...(q.options||[]).map(o=>Number(o.score)||0))*(Number(q.weight)||1), 0);
+  const band = bandFor(schema, score);
+  const order = (schema.domains||[]).map(d=>d.name);
+  const domains = Object.keys(domMap).sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  }).map(name=>({ name, notes:[...domMap[name].notes], sources:domMap[name].sources, auto:autoNames.has(name) }));
+  return {score, maxScore, band, answered, visibleCount:visibleQs.length, domains};
+}
+
+/* ---- Gating ---- */
+function bandIndexOf(schema, label){ return (schema.bands||[]).findIndex(b=>b.label===label); }
+function bandAtLeast(schema, label, minLabel){
+  if(minLabel==="Always") return true;
+  if(minLabel==="Never" || !minLabel) return false;
+  const i=bandIndexOf(schema,label), j=bandIndexOf(schema,minLabel);
+  return i>=0 && j>=0 && i>=j;
+}
+function screeningRequired(schema, tier, bandLabel){
+  const g = ((schema.gating||{}).screening)||{};
+  const rule = g[String(tier)]!==undefined? g[String(tier)] : "Always";
+  return { required: bandAtLeast(schema, bandLabel, rule), rule };
+}
+function ddqRoute(schema, tier, bandLabel, verdict, domainCount){
+  const g = ((schema.gating||{}).eddq)||{};
+  const reasons=[];
+  if((g.tiers||[]).map(Number).includes(Number(tier))) reasons.push("Tier "+tier+" third party");
+  if(g.minRating && g.minRating!=="Never" && bandAtLeast(schema, bandLabel, g.minRating)) reasons.push("Inherent risk rating: "+bandLabel);
+  if(g.onAdverse && verdict==="Adverse") reasons.push("Adverse screening verdict");
+  if(reasons.length) return {track:"EDDQ", reasons};
+  if((domainCount||0)>0) return {track:"DDQ", reasons:["Domains scoped in by IRQ trigger logic"]};
+  return {track:"None", reasons:["No DDQ domains triggered and no EDDQ condition met"]};
+}
+
+/* ---- Screening flag evaluation ---- */
+function evalConnectorFlag(conn, result){
+  if(!result) return null;
+  const sc = result.score!==undefined && result.score!=="" ? Number(result.score) : null;
+  const gr = (result.grade||"").trim();
+  let flag=false, reasons=[];
+  if(conn.flagBelow!=null && sc!=null && !isNaN(sc) && sc < Number(conn.flagBelow)){ flag=true; reasons.push("score "+sc+" < "+conn.flagBelow); }
+  if((conn.flagGrades||[]).length && gr && conn.flagGrades.map(s=>String(s).toLowerCase()).includes(gr.toLowerCase())){ flag=true; reasons.push("grade "+gr); }
+  if(sc==null && !gr) return null;
+  return {flag, reasons};
+}
+/* ENGINE-END */
+
+/* ============================================================
+   STATE & PERSISTENCE
+   ============================================================ */
+const LS_SCHEMA="tprm_schema_v2", LS_RECORDS="tprm_records_v2", LS_SECRETS="tprm_secrets_v1";
+const LEGACY_SCHEMA="ira_schema_v1", LEGACY_RECORDS="ira_records_v1";
+let SCHEMA = loadSchema();
+let V = newRecord();          // current working record
+let curStage = 1;
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function el(id){ return document.getElementById(id); }
+function today(){ return new Date().toISOString().slice(0,10); }
+
+function migrate(s){
+  s.meta=s.meta||{}; s.domains=s.domains||[]; s.questions=s.questions||[]; s.rules=s.rules||[];
+  s.bands=s.bands||clone(DEFAULT_SCHEMA.bands);
+  s.tiering=s.tiering||clone(DEFAULT_SCHEMA.tiering);
+  s.gating=s.gating||clone(DEFAULT_SCHEMA.gating);
+  s.screening=s.screening||clone(DEFAULT_SCHEMA.screening);
+  s.eddqEvidence=s.eddqEvidence||clone(DEFAULT_SCHEMA.eddqEvidence);
+  (s.questions||[]).forEach(q=>{ if(!q.tiers||!q.tiers.length) q.tiers=[1,2,3]; });
+  return s;
+}
+function loadSchema(){
+  try{ const s=localStorage.getItem(LS_SCHEMA); if(s) return migrate(JSON.parse(s)); }catch(e){}
+  // adopt a customised legacy IRQ schema if present (preserves user's Builder edits)
+  try{ const l=localStorage.getItem(LEGACY_SCHEMA);
+    if(l){ const ls=JSON.parse(l); const merged=migrate(ls); merged.meta.title=DEFAULT_SCHEMA.meta.title; merged.meta.version=DEFAULT_SCHEMA.meta.version; localStorage.setItem(LS_SCHEMA, JSON.stringify(merged)); return merged; }
+  }catch(e){}
+  return clone(DEFAULT_SCHEMA);
+}
+function saveSchema(){ localStorage.setItem(LS_SCHEMA, JSON.stringify(SCHEMA)); }
+function loadRecords(){ try{return JSON.parse(localStorage.getItem(LS_RECORDS)||"[]")}catch(e){return[]} }
+function saveRecords(r){ localStorage.setItem(LS_RECORDS, JSON.stringify(r)); }
+function loadSecrets(){ try{return JSON.parse(localStorage.getItem(LS_SECRETS)||"{}")}catch(e){return{}} }
+function saveSecrets(s){ localStorage.setItem(LS_SECRETS, JSON.stringify(s)); }
+
+/* one-time migration of legacy IRA records */
+function migrateLegacyRecords(){
+  try{
+    if(loadRecords().length) return;
+    const old=JSON.parse(localStorage.getItem(LEGACY_RECORDS)||"[]");
+    if(!Array.isArray(old)||!old.length) return;
+    const conv=old.map(r=>{
+      const n=newRecord();
+      n.id="leg_"+(r.id||uid());
+      n.company.name=r.vendor||""; n.engagement.service=r.service||"";
+      n.engagement.owner=r.owner||""; n.engagement.bu=r.bu||""; n.engagement.date=r.date||"";
+      n.irqAnswers=clone(r.answers||{}); n.stage=2; n.savedAt=r.savedAt||new Date().toISOString();
+      n.legacy=true;
+      return n;
+    });
+    saveRecords(conv);
+  }catch(e){}
+}
+
+function newRecord(){
+  return {
+    id:uid(), createdAt:new Date().toISOString(), savedAt:null,
+    stage:1, done:false,
+    company:{name:"",country:"",employees:"",contactName:"",contactEmail:"",contactPhone:""},
+    engagement:{service:"",owner:"",bu:"",date:today()},
+    profile:{nature:"",desc:"",regnotes:"",regs:[]},
+    tierAnswers:{},
+    irqAnswers:{},
+    screening:{results:{}, verdict:"", summary:"", skipped:false},
+    ddq:{items:{}, evidence:{}}
+  };
+}
+
+/* derived state helpers */
+function curTier(){ return computeTier(SCHEMA, V.tierAnswers); }
+function curIRQ(){ return computeIRQ(SCHEMA, V.irqAnswers, curTier().tier); }
+function curScreenGate(){ const t=curTier(), r=curIRQ(); return screeningRequired(SCHEMA, t.tier, r.band.label); }
+function curVerdict(){ return V.screening.skipped ? "" : (V.screening.verdict||""); }
+function curRoute(){ const t=curTier(), r=curIRQ(); return ddqRoute(SCHEMA, t.tier, r.band.label, curVerdict(), r.domains.length); }
+function tierColor(t){ return t===1? "var(--t1)" : t===2? "var(--t2)" : "var(--t3)"; }
+const REG_OPTIONS=["UK GDPR","EU GDPR","DORA","NIS2","PSD2","HIPAA","PCI DSS","SOX","GLBA","CCPA/CPRA","FCA / PRA rules","Other sector-specific"];
+function regsText(){ const regs=Array.isArray(V.profile.regs)?V.profile.regs:[]; return [...regs, V.profile.regnotes].filter(Boolean).join(", "); }
+/* Tailor IRQ wording to the named third party */
+function tailor(str){
+  const n=((V.company&&V.company.name)||"").trim();
+  if(!n||!str) return str;
+  return String(str)
+    .replace(/\bthe third[- ]party\b/gi, n)
+    .replace(/\bthe third party\b/gi, n)
+    .replace(/\byour organisation\b/gi, n)
+    .replace(/\bthe supplier\/vendor\b/gi, n)
+    .replace(/\bthe supplier\b/gi, n)
+    .replace(/\bthe TP\b/g, n);
+}
+
+/* ============================================================
+   STAGE NAVIGATION
+   ============================================================ */
+function setStage(n){
+  curStage=n;
+  for(let i=1;i<=4;i++) el("stage"+i).classList.toggle("hide", i!==n);
+  renderStepper();
+  if(n===1) renderStage1();
+  if(n===2) renderStage2();
+  if(n===3) renderStage3();
+  if(n===4) renderStage4();
+  renderSide();
+  window.scrollTo({top:0});
+}
+function renderStepper(){
+  const maxStage = Math.max(V.stage||1, curStage);
+  document.querySelectorAll("#stepper button").forEach(b=>{
+    const s=+b.dataset.stage;
+    b.classList.toggle("cur", s===curStage);
+    b.classList.toggle("done", s<curStage || (V.done && s<=4));
+    b.classList.toggle("locked", s>maxStage);
+  });
+  const t=curTier(), r=curIRQ();
+  el("stepSub1").textContent = t.answeredCount? ("Tier "+t.tier+" · score "+t.score) : "Vendor profile → Tier";
+  el("stepSub2").textContent = r.answered? (r.band.label+" · "+r.domains.length+" domain(s)") : "Tier-tailored questionnaire";
+  const g=curScreenGate();
+  el("stepSub3").textContent = !t.answeredCount? "External risk intelligence" : (g.required? (V.screening.verdict||"Required — pending") : "Not required");
+  el("stepSub4").textContent = (t.answeredCount&&r.answered)? curRoute().track : "DDQ / Enhanced DDQ scope";
+}
+
+/* ============================================================
+   SIDE SUMMARY
+   ============================================================ */
+function renderSide(){
+  const t=curTier();
+  if(t.answeredCount){
+    el("sideTier").innerHTML=`<div class="tierbox" style="background:${tierColor(t.tier)}">
+      <div class="lbl">Supplier tier</div><div class="val">Tier ${t.tier}</div>
+      <div class="score" style="font-size:12px">Score ${t.score} of ${t.max}</div></div>`;
+  } else {
+    el("sideTier").innerHTML=`<div class="empty">Complete Stage 1 profile to compute the tier.</div>`;
+  }
+  const r=curIRQ(); const b=r.band;
+  if(r.answered){
+    el("sideIrq").innerHTML=`<div class="ratingbox" style="background:${esc(b.color)}">
+      <div class="lbl">Inherent risk</div><div class="val">${esc(b.label)}</div>
+      <div class="score">Score ${r.score} / ${r.maxScore} · ${r.domains.length} domain(s)</div>
+      <div class="meter"><i style="width:${r.maxScore? Math.round(r.score/r.maxScore*100):0}%;background:rgba(255,255,255,.85)"></i></div></div>`;
+  } else {
+    el("sideIrq").innerHTML=`<div class="empty">IRQ not yet answered.</div>`;
+  }
+  const g=curScreenGate();
+  let scrTxt;
+  if(!t.answeredCount) scrTxt=`<span class="pill gray">—</span>`;
+  else if(!g.required) scrTxt=`<span class="pill">Not required</span>`;
+  else if(V.screening.verdict==="Clear") scrTxt=`<span class="pill">Clear</span>`;
+  else if(V.screening.verdict==="Conditional") scrTxt=`<span class="pill warn">Conditional</span>`;
+  else if(V.screening.verdict==="Adverse") scrTxt=`<span class="pill bad">Adverse</span>`;
+  else scrTxt=`<span class="pill warn">Required — pending</span>`;
+  el("sideScr").innerHTML=scrTxt;
+  const route=curRoute();
+  el("sideDdq").innerHTML = !t.answeredCount? `<span class="pill gray">—</span>` :
+    route.track==="EDDQ"? `<span class="pill bad">Enhanced DDQ</span>` :
+    route.track==="DDQ"? `<span class="pill auto">DDQ (scoped)</span>` : `<span class="pill gray">None</span>`;
+  el("sideStage").textContent = V.done? "Complete" : ("Stage "+curStage+" of 4");
+  renderStepper();
+}
+
+/* ============================================================
+   STAGE 1 — PROFILE & TIERING
+   ============================================================ */
+function renderStage1(){
+  // static fields
+  el("c_name").value=V.company.name; el("c_country").value=V.company.country;
+  el("c_employees").value=V.company.employees; el("c_contactName").value=V.company.contactName;
+  el("c_contactEmail").value=V.company.contactEmail; el("c_contactPhone").value=V.company.contactPhone;
+  el("e_service").value=V.engagement.service; el("e_owner").value=V.engagement.owner;
+  el("e_bu").value=V.engagement.bu; el("e_date").value=V.engagement.date||today();
+  el("p_nature").value=V.profile.nature; el("p_desc").value=V.profile.desc; el("p_regnotes").value=V.profile.regnotes;
+  // regulatory obligations multi-select
+  const regsSel=Array.isArray(V.profile.regs)?V.profile.regs:(V.profile.regs=[]);
+  el("p_regs").innerHTML=REG_OPTIONS.map(rg=>`<label class="${regsSel.includes(rg)?'on':''}"><input type="checkbox" data-reg value="${esc(rg)}" ${regsSel.includes(rg)?'checked':''}/>${esc(rg)}</label>`).join("");
+  el("p_regs").querySelectorAll("input[data-reg]").forEach(c=>c.addEventListener("change",()=>{
+    const cur=Array.isArray(V.profile.regs)?V.profile.regs:(V.profile.regs=[]);
+    if(c.checked){ if(!cur.includes(c.value)) cur.push(c.value); } else { const ix=cur.indexOf(c.value); if(ix>=0)cur.splice(ix,1); }
+    c.closest("label").classList.toggle("on", c.checked);
+  }));
+  // dynamic tiering factor controls
+  const wrap=el("tierFactors"); wrap.innerHTML="";
+  ((SCHEMA.tiering||{}).factors||[]).forEach(f=>{
+    const div=document.createElement("div");
+    if(f.multi){
+      const vals=Array.isArray(V.tierAnswers[f.id])?V.tierAnswers[f.id]:[];
+      div.innerHTML=`<label class="field"><span>${esc(f.label)}</span>
+        <span class="checks">${(f.options||[]).map(o=>`<label class="${vals.includes(o.value)?'on':''}"><input type="checkbox" data-tf="${esc(f.id)}" value="${esc(o.value)}" ${vals.includes(o.value)?'checked':''}/>${esc(o.label)}</label>`).join("")}</span></label>`;
+    } else {
+      const v=V.tierAnswers[f.id]||"";
+      div.innerHTML=`<label class="field"><span>${esc(f.label)}</span>
+        <select data-tf="${esc(f.id)}"><option value="">— Select —</option>${(f.options||[]).map(o=>`<option value="${esc(o.value)}" ${o.value===v?'selected':''}>${esc(o.label)}</option>`).join("")}</select></label>`;
+    }
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll("select[data-tf]").forEach(s=> s.addEventListener("change",()=>{
+    V.tierAnswers[s.dataset.tf]=s.value; renderTierPreview(); renderSide();
+  }));
+  wrap.querySelectorAll("input[type=checkbox][data-tf]").forEach(c=> c.addEventListener("change",()=>{
+    const fid=c.dataset.tf;
+    const cur=Array.isArray(V.tierAnswers[fid])?V.tierAnswers[fid]:[];
+    if(c.checked){ if(!cur.includes(c.value)) cur.push(c.value); } else { const i=cur.indexOf(c.value); if(i>=0)cur.splice(i,1); }
+    V.tierAnswers[fid]=cur;
+    c.closest("label").classList.toggle("on", c.checked);
+    renderTierPreview(); renderSide();
+  }));
+  renderTierPreview();
+}
+function renderTierPreview(){
+  const t=curTier();
+  const out=el("tierPreview");
+  if(!t.answeredCount){ out.innerHTML=`<div class="empty">Answer the profile factors above to compute the tier.</div>`; return; }
+  const ths=[...((SCHEMA.tiering||{}).thresholds||[])].sort((a,b)=>Number(b.min)-Number(a.min));
+  out.innerHTML=`
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div class="tierbox" style="background:${tierColor(t.tier)};min-width:170px">
+        <div class="lbl">Supplier tier</div><div class="val">Tier ${t.tier}</div>
+        <div style="font-size:12px;opacity:.95">Weighted score ${t.score} of ${t.max}</div>
+        <div class="meter"><i style="width:${t.max?Math.round(Math.max(0,t.score)/t.max*100):0}%;background:rgba(255,255,255,.85)"></i></div>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <div class="breakdown">${t.breakdown.map(b=>`<div class="br"><span><b>${esc(b.label)}</b> — <span class="muted">${esc(b.chosen)}</span></span><span>${b.points}</span></div>`).join("")}</div>
+        <div class="muted" style="font-size:12px;margin-top:8px">Thresholds: ${ths.map(th=>"Tier "+th.tier+" ≥ "+th.min).join(" · ")} ${t.answeredCount<t.factorCount? " · <b>"+(t.factorCount-t.answeredCount)+" factor(s) unanswered</b>":""}</div>
+      </div>
+    </div>`;
+}
+function gatherStage1(){
+  V.company={name:el("c_name").value.trim(), country:el("c_country").value.trim(), employees:el("c_employees").value.trim(),
+    contactName:el("c_contactName").value.trim(), contactEmail:el("c_contactEmail").value.trim(), contactPhone:el("c_contactPhone").value.trim()};
+  V.engagement={service:el("e_service").value.trim(), owner:el("e_owner").value.trim(), bu:el("e_bu").value.trim(), date:el("e_date").value};
+  V.profile={nature:el("p_nature").value.trim(), desc:el("p_desc").value.trim(), regnotes:el("p_regnotes").value.trim(), regs:Array.isArray(V.profile.regs)?V.profile.regs:[]};
+}
+
+/* ============================================================
+   STAGE 2 — IRQ (tier-tailored)
+   ============================================================ */
+function cleanupHiddenIRQ(){
+  const tier=curTier().tier;
+  (SCHEMA.questions||[]).forEach(q=>{
+    if(!inTier(q,tier) || !isVisible(q,V.irqAnswers)) delete V.irqAnswers[q.id];
+  });
+}
+function renderStage2(){
+  const t=curTier();
+  el("irqTierBanner").innerHTML=`<div class="gate ${t.tier===1?'eddq':t.tier===2?'req':'no'}" style="margin-bottom:0">
+    <b>Tier ${t.tier}</b> third party — the IRQ below is tailored to this tier${t.tier===3?' (abbreviated question set)':''}. ${esc(SCHEMA.meta.title||"")} v${esc(SCHEMA.meta.version||"")}</div>`;
+  el("qTitle").textContent="Inherent Risk Questionnaire";
+  const wrap=el("questions"); wrap.innerHTML="";
+  const ans=V.irqAnswers, tier=t.tier;
+  const tierQs=(SCHEMA.questions||[]).filter(q=>inTier(q,tier));
+  tierQs.forEach(q=>{
+    if(!isVisible(q,ans)) return;
+    const answeredCls=(ans[q.id]!==undefined&&ans[q.id]!=="")?" answered":"";
+    const div=document.createElement("div"); div.className="q"+answeredCls;
+    let opts="";
+    (q.options||[]).forEach(o=>{
+      const sel=ans[q.id]===o.value?" sel":"";
+      opts+=`<label class="opt${sel}"><input type="radio" name="q_${esc(q.id)}" value="${esc(o.value)}" ${sel?"checked":""}/><span class="ol">${esc(o.label)}</span></label>`;
+    });
+    div.innerHTML=`
+      <div class="qhead"><span class="qid">${esc(q.id)}</span>
+        <div style="flex:1"><div class="qtext">${esc(tailor(q.text))}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span class="badge ${q.config==="Conditional"?"cond":""}">${esc(q.config||"Always")}</span>
+            <span class="badge">${esc(q.riskArea||"")}</span>
+            <span class="badge">Tiers ${(q.tiers||[1,2,3]).join(", ")}</span>
+            ${q.guidance?`<span class="linklike" data-guide="${esc(q.id)}">Guidance</span>`:""}
+            ${q.triggerSummary?`<span class="linklike" data-trig="${esc(q.id)}">Trigger logic</span>`:""}
+          </div></div></div>
+      <div class="opts">${opts}</div>
+      ${q.guidance?`<div class="guide" id="guide_${esc(q.id)}">${esc(tailor(q.guidance))}</div>`:""}
+      ${q.triggerSummary?`<div class="trigsum" id="trig_${esc(q.id)}">${esc(tailor(q.triggerSummary))}</div>`:""}`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll("input[type=radio]").forEach(r=> r.addEventListener("change",e=>{
+    V.irqAnswers[e.target.name.slice(2)]=e.target.value;
+    cleanupHiddenIRQ(); renderStage2(); renderSide();
+  }));
+  wrap.querySelectorAll("[data-guide]").forEach(b=> b.addEventListener("click",()=> el("guide_"+b.dataset.guide).classList.toggle("show")));
+  wrap.querySelectorAll("[data-trig]").forEach(b=> b.addEventListener("click",()=> el("trig_"+b.dataset.trig).classList.toggle("show")));
+  const vis=tierQs.filter(q=>isVisible(q,ans));
+  const done=vis.filter(q=>ans[q.id]!==undefined&&ans[q.id]!=="").length;
+  el("qProgress").textContent=done+" / "+vis.length+" answered";
+}
+
+/* ============================================================
+   STAGE 3 — SCREENING
+   ============================================================ */
+function renderStage3(){
+  const t=curTier(), r=curIRQ(), g=curScreenGate();
+  const gateEl=el("scrGate");
+  if(g.required){
+    gateEl.innerHTML=`<div class="gate req"><b>Screening required.</b> Gate: Tier ${t.tier} screens when inherent risk ≥ <b>${esc(g.rule)}</b> (current rating: <b>${esc(r.band.label)}</b>). Complete the checks below and record a verdict.</div>`;
+    V.screening.skipped=false;
+  } else {
+    gateEl.innerHTML=`<div class="gate no"><b>Screening not required</b> for this engagement. Gate: Tier ${t.tier} screens when inherent risk ≥ <b>${esc(g.rule)}</b>; current rating is <b>${esc(r.band.label)}</b>. You may still run optional checks below, or continue to Due Diligence.</div>`;
+  }
+  // connector cards
+  const secrets=loadSecrets();
+  const wrap=el("connectors"); wrap.innerHTML="";
+  (((SCHEMA.screening||{}).connectors)||[]).filter(c=>c.enabled!==false).forEach(conn=>{
+    const res=V.screening.results[conn.id]||{};
+    const fl=evalConnectorFlag(conn,res);
+    const statusChip = fl==null? `<span class="pill gray">No result</span>` : fl.flag? `<span class="pill bad">Flag — ${esc(fl.reasons.join("; "))}</span>` : `<span class="pill">OK</span>`;
+    const div=document.createElement("div"); div.className="conn";
+    div.innerHTML=`
+      <div class="ch"><span class="cn">${esc(conn.name)}</span><span class="ctype">${esc(conn.type)}</span><span class="cstat">${statusChip}</span></div>
+      ${conn.help?`<div class="muted" style="font-size:12.5px;margin-top:4px">${esc(conn.help)}</div>`:""}
+      <div class="cgrid">
+        <label class="field"><span>${esc(conn.identLabel||"Identifier")}</span><input type="text" data-scident="${esc(conn.id)}" value="${esc(res.ident||"")}"/></label>
+        <label class="field"><span>Score (numeric)</span><input type="text" data-scscore="${esc(conn.id)}" value="${esc(res.score!==undefined?res.score:"")}" placeholder="e.g. 720"/></label>
+        <label class="field"><span>Grade / band</span><input type="text" data-scgrade="${esc(conn.id)}" value="${esc(res.grade||"")}" placeholder="e.g. B / Clear / Hit"/></label>
+      </div>
+      <div class="cgrid">
+        <label class="field"><span>API token (stored in this browser only)</span><input type="password" data-sctoken="${esc(conn.id)}" value="${esc(secrets[conn.id]||"")}" placeholder="${conn.endpoint?"Paste token to enable live fetch":"No API configured — manual entry"}"/></label>
+        <label class="field"><span>As of date</span><input type="date" data-scdate="${esc(conn.id)}" value="${esc(res.date||"")}"/></label>
+        <label class="field"><span>Source</span><select data-scsrc="${esc(conn.id)}"><option value="manual" ${res.source!=="api"?"selected":""}>Manual / report</option><option value="api" ${res.source==="api"?"selected":""}>API</option></select></label>
+      </div>
+      <label class="field"><span>Notes / findings</span><textarea data-scnotes="${esc(conn.id)}" style="min-height:48px">${esc(res.notes||"")}</textarea></label>
+      <div class="btnbar">
+        ${conn.endpoint?`<button class="btn soft sm" data-scfetch="${esc(conn.id)}">Fetch from API</button>`:""}
+        <button class="btn gray sm" data-scclear="${esc(conn.id)}">Clear result</button>
+        <span class="muted" style="font-size:12px;align-self:center">${res.fetchedAt?("Last updated "+new Date(res.fetchedAt).toLocaleString()):""}</span>
+      </div>`;
+    wrap.appendChild(div);
+  });
+  // wire inputs
+  function upd(connId, fn){ const res=V.screening.results[connId]||(V.screening.results[connId]={}); fn(res); res.fetchedAt=new Date().toISOString(); renderSide(); }
+  wrap.querySelectorAll("[data-scident]").forEach(i=> i.addEventListener("change",()=> upd(i.dataset.scident, r2=>r2.ident=i.value.trim())));
+  wrap.querySelectorAll("[data-scscore]").forEach(i=> i.addEventListener("change",()=>{ upd(i.dataset.scscore, r2=>r2.score=i.value.trim()); renderStage3(); }));
+  wrap.querySelectorAll("[data-scgrade]").forEach(i=> i.addEventListener("change",()=>{ upd(i.dataset.scgrade, r2=>r2.grade=i.value.trim()); renderStage3(); }));
+  wrap.querySelectorAll("[data-scdate]").forEach(i=> i.addEventListener("change",()=> upd(i.dataset.scdate, r2=>r2.date=i.value)));
+  wrap.querySelectorAll("[data-scnotes]").forEach(i=> i.addEventListener("change",()=> upd(i.dataset.scnotes, r2=>r2.notes=i.value)));
+  wrap.querySelectorAll("[data-scsrc]").forEach(i=> i.addEventListener("change",()=> upd(i.dataset.scsrc, r2=>r2.source=i.value)));
+  wrap.querySelectorAll("[data-sctoken]").forEach(i=> i.addEventListener("change",()=>{ const s=loadSecrets(); if(i.value.trim()) s[i.dataset.sctoken]=i.value.trim(); else delete s[i.dataset.sctoken]; saveSecrets(s); toast("Token saved locally"); }));
+  wrap.querySelectorAll("[data-scfetch]").forEach(b=> b.addEventListener("click",()=> fetchConnector(b.dataset.scfetch)));
+  wrap.querySelectorAll("[data-scclear]").forEach(b=> b.addEventListener("click",()=>{ delete V.screening.results[b.dataset.scclear]; renderStage3(); renderSide(); }));
+  // verdict
+  el("sc_verdict").value=V.screening.verdict||"";
+  el("sc_summary").value=V.screening.summary||"";
+}
+function getPath(obj, path){
+  if(!path) return undefined;
+  return path.split(".").reduce((o,k)=> (o==null? undefined : o[k]), obj);
+}
+async function fetchConnector(connId){
+  const conn=(((SCHEMA.screening||{}).connectors)||[]).find(c=>c.id===connId);
+  if(!conn||!conn.endpoint) return;
+  const res=V.screening.results[connId]||(V.screening.results[connId]={});
+  const ident=(res.ident||"").trim();
+  if(!ident){ toast("Enter the "+(conn.identLabel||"identifier")+" first"); return; }
+  const token=loadSecrets()[connId];
+  if(!token){ toast("Add an API token first (or use manual entry)"); return; }
+  const url=conn.endpoint.replace("{ident}", encodeURIComponent(ident));
+  toast("Fetching from "+conn.name+"…");
+  try{
+    const headers={};
+    if(conn.authHeader) headers[conn.authHeader]= conn.authPrefix? (conn.authPrefix+" "+token) : token;
+    const resp=await fetch(url,{headers});
+    if(!resp.ok) throw new Error("HTTP "+resp.status);
+    const data=await resp.json();
+    const sc=getPath(data, conn.scorePath);
+    const gr=getPath(data, conn.gradePath);
+    if(sc!==undefined) res.score=String(sc);
+    if(gr!==undefined) res.grade=String(gr);
+    res.source="api"; res.date=today(); res.fetchedAt=new Date().toISOString();
+    renderStage3(); renderSide(); toast(conn.name+" result retrieved");
+  }catch(e){
+    toast("Fetch failed ("+e.message+") — likely CORS/auth. Use manual entry from the platform portal or report.");
+  }
+}
+function gatherStage3(){
+  V.screening.verdict=el("sc_verdict").value;
+  V.screening.summary=el("sc_summary").value.trim();
+}
+
+/* ============================================================
+   STAGE 4 — DDQ / EDDQ
+   ============================================================ */
+const DDQ_STATUSES=["Not started","Sent to vendor","Responses received","Under review","Closed"];
+function renderStage4(){
+  const t=curTier(), r=curIRQ(), route=curRoute();
+  const banner=el("ddqRouteBanner");
+  if(route.track==="EDDQ"){
+    banner.innerHTML=`<div class="gate eddq"><b>Enhanced Due Diligence (EDDQ).</b> ${route.reasons.map(esc).join(" · ")}. All ${ (SCHEMA.domains||[]).length } domains are in scope and the mandatory evidence set below must be collected.</div>`;
+  } else if(route.track==="DDQ"){
+    banner.innerHTML=`<div class="gate ddq"><b>Standard DDQ.</b> ${route.reasons.map(esc).join(" · ")}. ${r.domains.length} domain(s) scoped in by the IRQ.</div>`;
+  } else {
+    banner.innerHTML=`<div class="gate no"><b>No due-diligence questionnaire required.</b> ${route.reasons.map(esc).join(" · ")}. Record can be completed.</div>`;
+  }
+  // domain table
+  const isE=route.track==="EDDQ";
+  const scoped = isE? (SCHEMA.domains||[]).map(d=>({name:d.name, notes:[], auto:d.auto, sources:["EDDQ — all domains"]}))
+    : r.domains.map(d=>({name:d.name, notes:d.notes, auto:d.auto, sources:[...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))]}));
+  const tbl=el("ddqTable");
+  if(route.track==="None"){ tbl.innerHTML=""; }
+  else{
+    tbl.innerHTML=`<h3>${isE?"EDDQ":"DDQ"} domain tracker</h3>
+    <table><thead><tr><th>#</th><th>Domain</th><th>Focus / triggered by</th><th style="width:160px">Status</th><th style="width:200px">Evidence / reference</th></tr></thead><tbody>
+    ${scoped.map((d,i)=>{
+      const it=V.ddq.items[d.name]||{};
+      return `<tr><td>${i+1}</td>
+        <td><b>${esc(d.name)}</b>${d.auto?' <span class="pill auto">auto</span>':''}</td>
+        <td class="muted" style="font-size:12px">${esc([...(d.notes||[]),...(d.sources||[])].join("; "))}</td>
+        <td><select data-dds="${esc(d.name)}">${DDQ_STATUSES.map(s=>`<option ${ (it.status||DDQ_STATUSES[0])===s?"selected":""}>${s}</option>`).join("")}</select></td>
+        <td><input type="text" data-dde="${esc(d.name)}" value="${esc(it.evidence||"")}" placeholder="e.g. SOC2 p.14, response ref"/></td></tr>`;
+    }).join("")}</tbody></table>`;
+    tbl.querySelectorAll("[data-dds]").forEach(s=> s.addEventListener("change",()=>{ const it=V.ddq.items[s.dataset.dds]||(V.ddq.items[s.dataset.dds]={}); it.status=s.value; }));
+    tbl.querySelectorAll("[data-dde]").forEach(i=> i.addEventListener("change",()=>{ const it=V.ddq.items[i.dataset.dde]||(V.ddq.items[i.dataset.dde]={}); it.evidence=i.value.trim(); }));
+  }
+  // EDDQ evidence checklist
+  const ev=el("eddqEvidence");
+  if(isE){
+    ev.innerHTML=`<h3>Mandatory evidence (EDDQ)</h3>
+      ${(SCHEMA.eddqEvidence||[]).map((item,i)=>{
+        const st=V.ddq.evidence[item]||{};
+        return `<div class="domchip"><div style="flex:1">
+          <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer">
+            <input type="checkbox" data-eve="${i}" ${st.received?"checked":""} style="margin-top:3px"/>
+            <span><b style="font-size:13.5px">${esc(item)}</b></span></label>
+          <input type="text" data-evr="${i}" value="${esc(st.ref||"")}" placeholder="Document reference / date received" style="margin-top:7px"/>
+        </div></div>`;
+      }).join("")}`;
+    ev.querySelectorAll("[data-eve]").forEach(c=> c.addEventListener("change",()=>{ const item=(SCHEMA.eddqEvidence||[])[+c.dataset.eve]; const st=V.ddq.evidence[item]||(V.ddq.evidence[item]={}); st.received=c.checked; }));
+    ev.querySelectorAll("[data-evr]").forEach(i=> i.addEventListener("change",()=>{ const item=(SCHEMA.eddqEvidence||[])[+i.dataset.evr]; const st=V.ddq.evidence[item]||(V.ddq.evidence[item]={}); st.ref=i.value.trim(); }));
+  } else ev.innerHTML="";
+}
+
+/* ============================================================
+   SAVE / RECORDS / DASHBOARD
+   ============================================================ */
+function gatherAll(){
+  if(curStage===1) gatherStage1();
+  if(curStage===3) gatherStage3();
+  const t=curTier(), r=curIRQ(), route=curRoute();
+  V.tier={score:t.score, max:t.max, tier:t.tier};
+  V.irq={score:r.score, maxScore:r.maxScore, band:r.band.label, bandColor:r.band.color,
+    domains:r.domains.map(d=>({name:d.name, notes:d.notes, auto:d.auto, sources:[...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))]}))};
+  V.route=route;
+  V.screeningGate=curScreenGate();
+  V.schemaVersion=SCHEMA.meta.version;
+  V.stage=Math.max(V.stage||1, curStage);
+  V.savedAt=new Date().toISOString();
+}
+function saveVendor(silent){
+  gatherAll();
+  if(!V.company.name){ toast("Enter the company name first"); switchView("assess"); setStage(1); el("c_name").focus(); return false; }
+  const recs=loadRecords();
+  const i=recs.findIndex(x=>x.id===V.id);
+  if(i>=0) recs[i]=clone(V); else recs.push(clone(V));
+  saveRecords(recs);
+  if(!silent) toast("Record saved");
+  return true;
+}
+function openVendor(id){
+  const r=loadRecords().find(x=>x.id===id); if(!r) return;
+  V=clone(r);
+  V.screening=V.screening||{results:{},verdict:"",summary:""}; V.screening.results=V.screening.results||{};
+  V.ddq=V.ddq||{items:{},evidence:{}}; V.ddq.items=V.ddq.items||{}; V.ddq.evidence=V.ddq.evidence||{};
+  V.tierAnswers=V.tierAnswers||{}; V.irqAnswers=V.irqAnswers||{};
+  switchView("assess");
+  setStage(Math.min(Math.max(V.stage||1,1),4));
+  toast("Opened "+(V.company.name||"record"));
+}
+function newVendor(){
+  V=newRecord(); switchView("assess"); setStage(1);
+}
+function renderDashboard(){
+  const recs=loadRecords().sort((a,b)=>(b.savedAt||"").localeCompare(a.savedAt||""));
+  el("kVendors").textContent=recs.length;
+  el("kTier1").textContent=recs.filter(r=>r.tier&&r.tier.tier===1).length;
+  el("kScreen").textContent=recs.filter(r=>!r.done&&r.screeningGate&&r.screeningGate.required&&!(r.screening&&r.screening.verdict)).length;
+  el("kDdq").textContent=recs.filter(r=>!r.done&&r.route&&r.route.track!=="None").length;
+  el("kDone").textContent=recs.filter(r=>r.done).length;
+  const wrap=el("dashTable");
+  if(!recs.length){ wrap.innerHTML=`<div class="empty">No third parties yet. Click <b>+ New third-party assessment</b> to start.</div>`; return; }
+  wrap.innerHTML=`<table><thead><tr><th>Third party</th><th>Service</th><th>Tier</th><th>Inherent risk</th><th>Screening</th><th>DD track</th><th>Status</th><th>Stage</th><th>Updated</th><th></th></tr></thead><tbody>
+  ${recs.map(r=>{
+    const tier=r.tier&&r.tier.tier? `<span class="tag" style="background:${r.tier.tier===1?'#dc2626':r.tier.tier===2?'#d97706':'#16a34a'};color:#fff">Tier ${r.tier.tier}</span>`:`<span class="muted">—</span>`;
+    const irq=r.irq&&r.irq.band? `<span class="tag" style="background:${esc(r.irq.bandColor||'#888')};color:#fff">${esc(r.irq.band)}</span>`:`<span class="muted">—</span>`;
+    const scr=r.screeningGate? (r.screeningGate.required? (r.screening&&r.screening.verdict? esc(r.screening.verdict) : "Pending") : "Not req.") : "—";
+    const route=r.route? r.route.track : "—";
+    const status=r.done? '<span class="tag" style="background:#16a34a;color:#fff">Completed</span>' : '<span class="tag" style="background:#d97706;color:#fff">Ongoing</span>';
+    const stage=r.done? "4 of 4" : ((r.stage||1)+" of 4");
+    return `<tr><td><b>${esc(r.company&&r.company.name||"—")}</b>${r.legacy?' <span class="pill gray">migrated</span>':''}</td>
+      <td>${esc(r.engagement&&r.engagement.service||"")}</td>
+      <td>${tier}</td><td>${irq}</td><td>${scr}</td><td>${route}</td><td>${status}</td><td>${stage}</td>
+      <td class="muted" style="font-size:12px">${r.savedAt? new Date(r.savedAt).toLocaleDateString():""}</td>
+      <td style="white-space:nowrap">
+        <button class="btn ghost sm" data-open="${esc(r.id)}">Open</button>
+        <button class="btn gray sm" data-dup="${esc(r.id)}">Duplicate</button>
+        <button class="btn danger sm" data-del="${esc(r.id)}">Delete</button></td></tr>`;
+  }).join("")}</tbody></table>`;
+  wrap.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openVendor(b.dataset.open)));
+  wrap.querySelectorAll("[data-dup]").forEach(b=>b.addEventListener("click",()=>{
+    const r=loadRecords().find(x=>x.id===b.dataset.dup); if(!r)return;
+    const c=clone(r); c.id=uid(); c.company.name=(c.company.name||"")+" (copy)"; c.savedAt=new Date().toISOString();
+    const recs=loadRecords(); recs.push(c); saveRecords(recs); renderDashboard(); toast("Duplicated");
+  }));
+  wrap.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
+    if(!confirm("Delete this third-party record?")) return;
+    saveRecords(loadRecords().filter(x=>x.id!==b.dataset.del));
+    if(V.id===b.dataset.del) V=newRecord();
+    renderDashboard(); toast("Deleted");
+  }));
+}
+
+/* ============================================================
+   EXPORTS — CSV / JSON / checklist / PDF
+   ============================================================ */
+function download(name, text, type){
+  const blob=new Blob([text], {type:type||"text/plain"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+function csvCell(v){ v=v==null?"":String(v); return /[",\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
+function exportCSV(){
+  gatherAll();
+  const t=curTier(), r=curIRQ(), route=curRoute(), g=curScreenGate();
+  const v=V.company.name||"assessment";
+  let rows=[["Field","Value"],
+    ["Third party",V.company.name],["Country",V.company.country],["Employees",V.company.employees],
+    ["Contact",V.company.contactName+" "+V.company.contactEmail+" "+V.company.contactPhone],
+    ["Service",V.engagement.service],["Service Owner",V.engagement.owner],["Business Unit",V.engagement.bu],["Date",V.engagement.date],
+    ["Nature of business",V.profile.nature],["Description",V.profile.desc],["Regulatory obligations",regsText()],
+    [],["TIER","Tier "+t.tier+" (score "+t.score+" / "+t.max+")"]];
+  t.breakdown.forEach(b=> rows.push(["  "+b.label, b.chosen+" ("+b.points+")"]));
+  rows.push([],["INHERENT RISK",r.band.label+" ("+r.score+" / "+r.maxScore+")"],[],["Question ID","Question","Answer"]);
+  (SCHEMA.questions||[]).filter(q=>inTier(q,t.tier)&&isVisible(q,V.irqAnswers)).forEach(q=>{
+    const o=findOption(q,V.irqAnswers[q.id]); rows.push([q.id,tailor(q.text),o?o.label:""]);
+  });
+  rows.push([],["SCREENING", g.required? ("Required (gate ≥ "+g.rule+") — verdict: "+(V.screening.verdict||"pending")) : "Not required"]);
+  ((SCHEMA.screening||{}).connectors||[]).forEach(c=>{
+    const res=V.screening.results[c.id]; if(!res) return;
+    rows.push(["  "+c.name, "score "+(res.score||"—")+" grade "+(res.grade||"—")+" ("+(res.source||"manual")+", "+(res.date||"")+") "+(res.notes||"")]);
+  });
+  if(V.screening.summary) rows.push(["  Summary",V.screening.summary]);
+  rows.push([],["DUE DILIGENCE TRACK",route.track+" — "+route.reasons.join("; ")],[],["Domain","Notes / triggered by","Status","Evidence"]);
+  const scoped= route.track==="EDDQ"? (SCHEMA.domains||[]).map(d=>({name:d.name,info:"EDDQ — all domains"})) :
+    r.domains.map(d=>({name:d.name,info:[...d.notes, ...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; ")}));
+  scoped.forEach(d=>{ const it=V.ddq.items[d.name]||{}; rows.push([d.name,d.info,it.status||"Not started",it.evidence||""]); });
+  if(route.track==="EDDQ"){
+    rows.push([],["EDDQ mandatory evidence","Received","Reference"]);
+    (SCHEMA.eddqEvidence||[]).forEach(item=>{ const st=V.ddq.evidence[item]||{}; rows.push([item, st.received?"Yes":"No", st.ref||""]); });
+  }
+  download(`TPRM_${v}_${today()}.csv`, rows.map(row=>row.map(csvCell).join(",")).join("\n"), "text/csv");
+}
+function exportChecklist(){
+  gatherAll();
+  const r=curIRQ(), route=curRoute(); const v=V.company.name||"assessment";
+  let rows=[["DDQ Scope Checklist — "+(V.company.name||"")],
+    ["Tier "+curTier().tier+" · Inherent risk: "+r.band.label+" ("+r.score+"/"+r.maxScore+") · Track: "+route.track],[],
+    ["#","DDQ Domain / Focus Area","Auto?","Focus controls / notes","Triggered by","Send to vendor? (Y/N)","Status"]];
+  const scoped= route.track==="EDDQ"? (SCHEMA.domains||[]).map(d=>({name:d.name,auto:d.auto,notes:[],src:"EDDQ — all domains"})) :
+    r.domains.map(d=>({name:d.name,auto:d.auto,notes:d.notes,src:[...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; ")}));
+  scoped.forEach((d,i)=> rows.push([i+1,d.name,d.auto?"Auto":"",(d.notes||[]).join(" | "),d.src,"",""]));
+  download(`DDQ_Checklist_${v}_${today()}.csv`, rows.map(row=>row.map(csvCell).join(",")).join("\n"), "text/csv");
+}
+function exportJSON(){
+  gatherAll(); const v=V.company.name||"assessment";
+  download(`TPRM_${v}_${today()}.json`, JSON.stringify(V,null,2), "application/json");
+}
+function buildReport(){
+  gatherAll();
+  const t=curTier(), r=curIRQ(), route=curRoute(), g=curScreenGate(), m=SCHEMA.meta;
+  const qrows=(SCHEMA.questions||[]).filter(q=>inTier(q,t.tier)&&isVisible(q,V.irqAnswers)).map(q=>{
+    const o=findOption(q,V.irqAnswers[q.id]);
+    return `<tr><td><b>${esc(q.id)}</b></td><td>${esc(tailor(q.text))}</td><td>${esc(o?o.label:"—")}</td></tr>`;
+  }).join("");
+  const scoped= route.track==="EDDQ"? (SCHEMA.domains||[]).map(d=>({name:d.name,auto:d.auto,notes:[],src:"EDDQ — all domains"})) :
+    r.domains.map(d=>({name:d.name,auto:d.auto,notes:d.notes,src:[...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; ")}));
+  const drows=scoped.map((d,i)=>{ const it=V.ddq.items[d.name]||{};
+    return `<tr><td>${i+1}</td><td><b>${esc(d.name)}</b>${d.auto?' <span class="tag" style="background:#eff6ff;color:#1d4ed8">auto</span>':''}</td><td>${esc([...(d.notes||[]),d.src].filter(Boolean).join("; "))}</td><td>${esc(it.status||"Not started")}</td></tr>`; }).join("");
+  const srows=((SCHEMA.screening||{}).connectors||[]).map(c=>{
+    const res=V.screening.results[c.id]; if(!res) return "";
+    const fl=evalConnectorFlag(c,res);
+    return `<tr><td><b>${esc(c.name)}</b></td><td>${esc(res.score||"—")}</td><td>${esc(res.grade||"—")}</td><td>${fl&&fl.flag?'<span class="tag" style="background:#fef2f2;color:#b91c1c">Flag</span>':(fl?'OK':'—')}</td><td>${esc(res.date||"")}</td><td>${esc(res.notes||"")}</td></tr>`;
+  }).join("");
+  const erows= route.track==="EDDQ"? (SCHEMA.eddqEvidence||[]).map(item=>{ const st=V.ddq.evidence[item]||{};
+    return `<tr><td>${esc(item)}</td><td>${st.received?"Received":"Outstanding"}</td><td>${esc(st.ref||"")}</td></tr>`; }).join("") : "";
+  el("report").innerHTML=`
+    <div class="rep-h">
+      <div><div style="font-size:20px;font-weight:800;color:#4338ca">${esc(m.org? m.org+" — ":"")}Third-Party Risk Assessment</div>
+      <div style="color:#64748b">${esc(m.title||"")} · v${esc(m.version||"")}</div></div>
+      <div style="text-align:right;font-size:12px;color:#64748b">Generated ${esc(new Date().toLocaleString())}</div>
+    </div>
+    <div class="rep-section"><table>
+      <tr><td style="width:160px"><b>Third party</b></td><td>${esc(V.company.name||"—")}</td><td style="width:160px"><b>Country / HQ</b></td><td>${esc(V.company.country||"—")}</td></tr>
+      <tr><td><b>Service</b></td><td>${esc(V.engagement.service||"—")}</td><td><b>Employees</b></td><td>${esc(V.company.employees||"—")}</td></tr>
+      <tr><td><b>Service Owner</b></td><td>${esc(V.engagement.owner||"—")}</td><td><b>Business unit</b></td><td>${esc(V.engagement.bu||"—")}</td></tr>
+      <tr><td><b>Contact</b></td><td>${esc([V.company.contactName,V.company.contactEmail,V.company.contactPhone].filter(Boolean).join(" · ")||"—")}</td><td><b>Assessment date</b></td><td>${esc(V.engagement.date||"—")}</td></tr>
+      <tr><td><b>Nature of business</b></td><td colspan=3>${esc(V.profile.nature||"—")} ${esc(V.profile.desc?(" — "+V.profile.desc):"")}</td></tr>
+      <tr><td><b>Regulatory obligations</b></td><td colspan=3>${esc(regsText()||"—")}</td></tr>
+    </table></div>
+    <div class="rep-section" style="display:flex;gap:14px;align-items:stretch;flex-wrap:wrap">
+      <div style="background:${t.tier===1?'#dc2626':t.tier===2?'#d97706':'#16a34a'};color:#fff;border-radius:12px;padding:14px 22px;text-align:center">
+        <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Supplier tier</div>
+        <div style="font-size:24px;font-weight:800">Tier ${t.tier}</div><div style="font-size:12px">Score ${t.score} / ${t.max}</div></div>
+      <div style="background:${esc(r.band.color)};color:#fff;border-radius:12px;padding:14px 22px;text-align:center">
+        <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Inherent risk</div>
+        <div style="font-size:24px;font-weight:800">${esc(r.band.label)}</div><div style="font-size:12px">Score ${r.score} / ${r.maxScore}</div></div>
+      <div style="flex:1;min-width:220px;color:#475569;align-self:center"><b>Due-diligence track: ${esc(route.track)}</b> — ${route.reasons.map(esc).join("; ")}.<br>Screening: ${g.required? ("required (gate ≥ "+esc(g.rule)+") — verdict: <b>"+esc(V.screening.verdict||"pending")+"</b>") : "not required"}.</div>
+    </div>
+    <div class="rep-section"><h3 style="color:#4338ca">Tiering breakdown</h3>
+      <table><thead><tr><th>Factor</th><th>Selection</th><th>Weighted points</th></tr></thead><tbody>
+      ${t.breakdown.map(b=>`<tr><td>${esc(b.label)}</td><td>${esc(b.chosen)}</td><td>${b.points}</td></tr>`).join("")}</tbody></table></div>
+    <div class="rep-section"><h3 style="color:#4338ca">IRQ responses (Tier ${t.tier} question set)</h3>
+      <table><thead><tr><th>ID</th><th>Question</th><th>Response</th></tr></thead><tbody>${qrows||'<tr><td colspan=3 style="color:#64748b">Not answered.</td></tr>'}</tbody></table></div>
+    ${srows?`<div class="rep-section"><h3 style="color:#4338ca">Screening results</h3>
+      <table><thead><tr><th>Source</th><th>Score</th><th>Grade</th><th>Flag</th><th>As of</th><th>Notes</th></tr></thead><tbody>${srows}</tbody></table>
+      ${V.screening.summary?`<p style="font-size:13px;color:#475569">${esc(V.screening.summary)}</p>`:""}</div>`:""}
+    <div class="rep-section"><h3 style="color:#4338ca">Due-diligence scope (${esc(route.track)})</h3>
+      <table><thead><tr><th>#</th><th>Domain / focus area</th><th>Focus / triggered by</th><th>Status</th></tr></thead><tbody>${drows||'<tr><td colspan=4 style="color:#64748b">None.</td></tr>'}</tbody></table></div>
+    ${erows?`<div class="rep-section"><h3 style="color:#4338ca">EDDQ mandatory evidence</h3>
+      <table><thead><tr><th>Evidence item</th><th>Status</th><th>Reference</th></tr></thead><tbody>${erows}</tbody></table></div>`:""}
+    <div class="rep-section" style="font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px">
+      ${esc(m.org? m.org+" ":"")}TPRM · ${esc(m.title||"")} v${esc(m.version||"")} · Generated from the TPRM Lifecycle Platform.
+    </div>`;
+  const prevTitle=document.title;
+  document.title=`TPRM_${V.company.name||"assessment"}_${today()}`;
+  window.print();
+  setTimeout(()=>document.title=prevTitle, 800);
+}
+
+/* ============================================================
+   BUILDER
+   ============================================================ */
+function bandChoices(extra){
+  const labels=(SCHEMA.bands||[]).map(b=>b.label);
+  return (extra||[]).concat(labels);
+}
+function renderBuilder(){
+  el("b_title").value=SCHEMA.meta.title||""; el("b_org").value=SCHEMA.meta.org||"";
+  el("b_version").value=SCHEMA.meta.version||""; el("b_answeredBy").value=SCHEMA.meta.answeredBy||"";
+  el("b_updated").value=SCHEMA.meta.updated||"";
+
+  /* ---- tiering factors ---- */
+  const tf=el("builderTierFactors");
+  tf.innerHTML=((SCHEMA.tiering||{}).factors||[]).map((f,i)=>`
+    <div class="sub-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div style="flex:1">
+        <b>${esc(f.label)}</b> <span class="badge">weight ${esc(f.weight)}</span> ${f.multi?`<span class="badge">multi · ${esc(f.aggregate||"max")}${f.floor!=null?(" · floor "+f.floor):""}</span>`:""}
+        <div class="muted" style="font-size:12px;margin-top:4px">${(f.options||[]).map(o=>esc(o.label)+" ("+(o.score||0)+")").join(" · ")}</div>
+      </div>
+      <div style="white-space:nowrap;display:flex;flex-direction:column;gap:6px">
+        <button class="btn ghost sm" data-ef="${i}">Edit</button>
+        <button class="btn danger sm" data-df="${i}">Delete</button>
+      </div></div></div>`).join("") || `<div class="empty">No factors.</div>`;
+  tf.querySelectorAll("[data-ef]").forEach(b=>b.addEventListener("click",()=>editFactor(+b.dataset.ef)));
+  tf.querySelectorAll("[data-df]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete factor?")){SCHEMA.tiering.factors.splice(+b.dataset.df,1); saveSchema(); renderBuilder();}}));
+
+  /* ---- thresholds ---- */
+  const th=el("builderThresholds");
+  th.innerHTML=`<table><thead><tr><th>Tier</th><th>Minimum weighted score</th></tr></thead><tbody>${
+    ((SCHEMA.tiering||{}).thresholds||[]).map((t,i)=>`<tr>
+      <td><b>Tier ${esc(t.tier)}</b></td>
+      <td><input type="number" data-thmin="${i}" value="${esc(t.min)}" style="width:120px"/></td></tr>`).join("")
+  }</tbody></table>`;
+  th.querySelectorAll("[data-thmin]").forEach(inp=>inp.addEventListener("change",()=>{
+    SCHEMA.tiering.thresholds[+inp.dataset.thmin].min=Number(inp.value)||0; saveSchema(); toast("Thresholds saved");
+  }));
+
+  /* ---- gating ---- */
+  const scrChoices=bandChoices(["Always","Never"]);
+  ["1","2","3"].forEach(t=>{
+    const sel=el("g_scr_"+t);
+    const cur=((SCHEMA.gating||{}).screening||{})[t]||"Always";
+    sel.innerHTML=scrChoices.map(c=>`<option ${c===cur?"selected":""}>${esc(c)}</option>`).join("");
+  });
+  const ge=(SCHEMA.gating||{}).eddq||{};
+  [1,2,3].forEach(t=>{
+    const c=el("g_eddq_t"+t); c.checked=(ge.tiers||[]).map(Number).includes(t);
+    el("lg_t"+t).classList.toggle("on", c.checked);
+  });
+  el("g_eddq_band").innerHTML=bandChoices(["Never"]).map(c=>`<option ${c===(ge.minRating||"High")?"selected":""}>${esc(c)}</option>`).join("");
+  el("g_eddq_adv").value=ge.onAdverse===false?"no":"yes";
+
+  /* ---- connectors ---- */
+  const bc=el("builderConnectors");
+  bc.innerHTML=(((SCHEMA.screening||{}).connectors)||[]).map((c,i)=>`
+    <div class="sub-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div style="flex:1">
+        <b>${esc(c.name)}</b> <span class="badge">${esc(c.type)}</span> ${c.enabled===false?'<span class="pill gray">disabled</span>':'<span class="pill">enabled</span>'}
+        <div class="muted" style="font-size:12px;margin-top:4px">${c.endpoint? esc(c.endpoint) : "Manual entry only"} ${c.flagBelow!=null?(" · flag &lt; "+c.flagBelow):""} ${(c.flagGrades||[]).length?(" · flag grades: "+c.flagGrades.join(", ")):""}</div>
+      </div>
+      <div style="white-space:nowrap;display:flex;flex-direction:column;gap:6px">
+        <button class="btn ghost sm" data-ec="${i}">Edit</button>
+        <button class="btn danger sm" data-dc="${i}">Delete</button>
+      </div></div></div>`).join("") || `<div class="empty">No connectors.</div>`;
+  bc.querySelectorAll("[data-ec]").forEach(b=>b.addEventListener("click",()=>editConnector(+b.dataset.ec)));
+  bc.querySelectorAll("[data-dc]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete connector?")){SCHEMA.screening.connectors.splice(+b.dataset.dc,1); saveSchema(); renderBuilder();}}));
+
+  /* ---- questions ---- */
+  const bq=el("builderQuestions");
+  bq.innerHTML=(SCHEMA.questions||[]).map((q,i)=>`
+    <div class="sub-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div style="flex:1">
+          <div><span class="qid">${esc(q.id)}</span> <span class="badge ${q.config==="Conditional"?"cond":""}">${esc(q.config||"Always")}</span> <span class="badge">Tiers ${(q.tiers||[1,2,3]).join(", ")}</span> <span class="muted">${(q.options||[]).length} options</span></div>
+          <div style="margin-top:6px;font-weight:600">${esc(q.text)}</div>
+          <div class="muted" style="font-size:12px;margin-top:4px">${(q.options||[]).map(o=>esc(o.label)+" ("+(o.score||0)+")").join(" · ")}</div>
+        </div>
+        <div style="white-space:nowrap;display:flex;flex-direction:column;gap:6px">
+          <button class="btn ghost sm" data-eq="${i}">Edit</button>
+          <div style="display:flex;gap:4px"><button class="btn gray sm" data-up="${i}">↑</button><button class="btn gray sm" data-down="${i}">↓</button></div>
+          <button class="btn danger sm" data-dq="${i}">Delete</button>
+        </div>
+      </div>
+    </div>`).join("") || `<div class="empty">No questions.</div>`;
+  bq.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>editQuestion(+b.dataset.eq)));
+  bq.querySelectorAll("[data-dq]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete "+SCHEMA.questions[+b.dataset.dq].id+"?")){SCHEMA.questions.splice(+b.dataset.dq,1); saveSchema(); renderBuilder();}}));
+  bq.querySelectorAll("[data-up]").forEach(b=>b.addEventListener("click",()=>moveQ(+b.dataset.up,-1)));
+  bq.querySelectorAll("[data-down]").forEach(b=>b.addEventListener("click",()=>moveQ(+b.dataset.down,1)));
+
+  /* ---- rules ---- */
+  const br=el("builderRules");
+  br.innerHTML=(SCHEMA.rules||[]).map((r,i)=>`
+    <div class="sub-card"><div style="display:flex;justify-content:space-between;gap:10px">
+      <div style="flex:1"><b>${esc(r.label||"Rule "+(i+1))}</b>
+        <div class="muted" style="font-size:12px;margin-top:4px">IF ${ (r.when||[]).map(c=>esc(c.q)+" "+esc(c.op)+" ["+(c.vals||[]).map(esc).join(", ")+"]").join(" AND ") }</div>
+        <div class="muted" style="font-size:12px">THEN ${ (r.then||[]).map(t=>esc(t.domain)+(t.note?(" ("+esc(t.note)+")"):"")).join(", ") }</div></div>
+      <div style="white-space:nowrap"><button class="btn ghost sm" data-er="${i}">Edit</button> <button class="btn danger sm" data-dr="${i}">Delete</button></div>
+    </div></div>`).join("") || `<div class="empty">No rules.</div>`;
+  br.querySelectorAll("[data-er]").forEach(b=>b.addEventListener("click",()=>editRule(+b.dataset.er)));
+  br.querySelectorAll("[data-dr]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete rule?")){SCHEMA.rules.splice(+b.dataset.dr,1); saveSchema(); renderBuilder();}}));
+
+  /* ---- domains ---- */
+  const bd=el("builderDomains");
+  bd.innerHTML=`<table><thead><tr><th>Domain</th><th>Description</th><th>Auto</th><th></th></tr></thead><tbody>${
+    (SCHEMA.domains||[]).map((d,i)=>`<tr>
+      <td><b>${esc(d.name)}</b></td><td class="muted">${esc(d.desc||"")}</td>
+      <td><input type="checkbox" data-dauto="${i}" ${d.auto?"checked":""}/></td>
+      <td><button class="btn danger sm" data-dd="${i}">Remove</button></td></tr>`).join("")
+  }</tbody></table>`;
+  bd.querySelectorAll("[data-dauto]").forEach(c=>c.addEventListener("change",()=>{SCHEMA.domains[+c.dataset.dauto].auto=c.checked; saveSchema();}));
+  bd.querySelectorAll("[data-dd]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Remove domain?")){SCHEMA.domains.splice(+b.dataset.dd,1); saveSchema(); renderBuilder();}}));
+
+  /* ---- bands ---- */
+  const bb=el("builderBands");
+  bb.innerHTML=`<table><thead><tr><th>Label</th><th>Min</th><th>Max</th><th>Colour</th><th></th></tr></thead><tbody>${
+    (SCHEMA.bands||[]).map((b,i)=>`<tr>
+      <td><input type="text" data-bl="${i}" value="${esc(b.label)}"/></td>
+      <td><input type="number" data-bmin="${i}" value="${esc(b.min)}" style="width:80px"/></td>
+      <td><input type="number" data-bmax="${i}" value="${esc(b.max)}" style="width:80px"/></td>
+      <td><input type="color" data-bc="${i}" value="${esc(b.color||"#888888")}"/></td>
+      <td><button class="btn danger sm" data-bdel="${i}">Remove</button></td></tr>`).join("")
+  }</tbody></table>`;
+  bb.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{
+    const i=+(inp.dataset.bl||inp.dataset.bmin||inp.dataset.bmax||inp.dataset.bc);
+    const b=SCHEMA.bands[i];
+    if(inp.dataset.bl!=null)b.label=inp.value;
+    if(inp.dataset.bmin!=null)b.min=Number(inp.value);
+    if(inp.dataset.bmax!=null)b.max=Number(inp.value);
+    if(inp.dataset.bc!=null)b.color=inp.value;
+    saveSchema();
+  }));
+  bb.querySelectorAll("[data-bdel]").forEach(b=>b.addEventListener("click",()=>{SCHEMA.bands.splice(+b.dataset.bdel,1);saveSchema();renderBuilder();}));
+
+  /* ---- EDDQ evidence ---- */
+  el("b_eddqEvidence").value=(SCHEMA.eddqEvidence||[]).join("\n");
+}
+function moveQ(i,dir){ const j=i+dir; if(j<0||j>=SCHEMA.questions.length)return; const a=SCHEMA.questions; [a[i],a[j]]=[a[j],a[i]]; saveSchema(); renderBuilder(); }
+
+/* ---- Tiering factor editor ---- */
+let editFIndex=-1;
+function editFactor(i){
+  editFIndex=i;
+  const f = i<0? {id:"factor_"+uid().slice(0,4), label:"", weight:1, multi:false, aggregate:"max", floor:null, options:[{value:"",label:"",score:0}]} : clone(SCHEMA.tiering.factors[i]);
+  modalState=f;
+  function rows(){ return (f.options||[]).map((o,idx)=>`
+    <div class="opt-edit">
+      <input type="text" data-fov="${idx}" placeholder="value" value="${esc(o.value)}"/>
+      <input type="text" data-fol="${idx}" placeholder="label" value="${esc(o.label)}"/>
+      <input type="number" data-fos="${idx}" placeholder="score" step="0.5" value="${esc(o.score||0)}"/>
+    </div>`).join(""); }
+  openModal(i<0?"Add tiering factor":"Edit factor", `
+    <div class="row">
+      <label class="field"><span>Factor ID</span><input type="text" id="ef_id" value="${esc(f.id)}"/></label>
+      <label class="field"><span>Label</span><input type="text" id="ef_label" value="${esc(f.label)}"/></label>
+      <label class="field"><span>Weight</span><input type="number" id="ef_weight" step="0.1" value="${esc(f.weight)}" style="max-width:110px"/></label>
+    </div>
+    <div class="row">
+      <label class="field"><span>Selection</span><select id="ef_multi"><option value="single" ${!f.multi?"selected":""}>Single select</option><option value="multi" ${f.multi?"selected":""}>Multi select</option></select></label>
+      <label class="field"><span>Multi aggregate</span><select id="ef_agg"><option ${f.aggregate!=="sum"?"selected":""}>max</option><option ${f.aggregate==="sum"?"selected":""}>sum</option></select></label>
+      <label class="field"><span>Floor (min points, optional)</span><input type="number" id="ef_floor" value="${f.floor!=null?esc(f.floor):""}" style="max-width:110px"/></label>
+    </div>
+    <h3>Options (value · label · score)</h3>
+    <div id="ef_opts">${rows()}</div>
+    <button class="btn gray sm" id="ef_addopt">+ Add option</button>
+  `,[
+    {label:"Cancel",cls:"gray",fn:closeModal},
+    {label:(i<0?"Add factor":"Save factor"),cls:"",fn:saveFactorFromModal}
+  ]);
+  el("ef_addopt").addEventListener("click",()=>{
+    modalState.options=collectFactorOpts(); modalState.options.push({value:"",label:"",score:0});
+    el("ef_opts").innerHTML=modalState.options.map((o,idx)=>`
+      <div class="opt-edit">
+        <input type="text" data-fov="${idx}" placeholder="value" value="${esc(o.value)}"/>
+        <input type="text" data-fol="${idx}" placeholder="label" value="${esc(o.label)}"/>
+        <input type="number" data-fos="${idx}" placeholder="score" step="0.5" value="${esc(o.score||0)}"/>
+      </div>`).join("");
+  });
+}
+function collectFactorOpts(){
+  const blocks=el("ef_opts").children; const out=[];
+  for(let idx=0;idx<blocks.length;idx++){
+    const root=blocks[idx];
+    out.push({value:root.querySelector(`[data-fov="${idx}"]`).value.trim(),
+      label:root.querySelector(`[data-fol="${idx}"]`).value.trim(),
+      score:Number(root.querySelector(`[data-fos="${idx}"]`).value)||0});
+  }
+  return out.filter(o=>o.value||o.label);
+}
+function saveFactorFromModal(){
+  const f=modalState;
+  f.id=el("ef_id").value.trim(); f.label=el("ef_label").value.trim();
+  f.weight=Number(el("ef_weight").value)||1;
+  f.multi=el("ef_multi").value==="multi";
+  f.aggregate=el("ef_agg").value;
+  f.floor=el("ef_floor").value===""? null : Number(el("ef_floor").value);
+  f.options=collectFactorOpts();
+  f.options.forEach(o=>{ if(!o.value) o.value=o.label.toLowerCase().replace(/[^a-z0-9]+/g,"_"); });
+  if(!f.id||!f.label){ toast("Factor ID and label required"); return; }
+  if(editFIndex<0) SCHEMA.tiering.factors.push(f); else SCHEMA.tiering.factors[editFIndex]=f;
+  saveSchema(); closeModal(); renderBuilder(); toast("Factor saved");
+}
+
+/* ---- Connector editor ---- */
+let editCIndex=-1;
+function editConnector(i){
+  editCIndex=i;
+  const c = i<0? {id:"conn_"+uid().slice(0,4), name:"", type:"Cyber rating", enabled:true, endpoint:"", identLabel:"Identifier", authHeader:"Authorization", authPrefix:"", scorePath:"", gradePath:"", flagBelow:null, flagGrades:[], help:""} : clone(SCHEMA.screening.connectors[i]);
+  modalState=c;
+  openModal(i<0?"Add connector":"Edit "+c.name, `
+    <div class="row">
+      <label class="field"><span>Name</span><input type="text" id="ec_name" value="${esc(c.name)}"/></label>
+      <label class="field"><span>Type</span><input type="text" id="ec_type" value="${esc(c.type)}" placeholder="Cyber rating / Financial / Compliance"/></label>
+      <label class="field"><span>Enabled</span><select id="ec_en"><option value="yes" ${c.enabled!==false?"selected":""}>Yes</option><option value="no" ${c.enabled===false?"selected":""}>No</option></select></label>
+    </div>
+    <label class="field"><span>API endpoint — use {ident} as the identifier placeholder; leave blank for manual-entry only</span><input type="text" id="ec_ep" value="${esc(c.endpoint||"")}" placeholder="https://api.example.com/companies/{ident}"/></label>
+    <div class="row">
+      <label class="field"><span>Identifier label</span><input type="text" id="ec_il" value="${esc(c.identLabel||"")}"/></label>
+      <label class="field"><span>Auth header</span><input type="text" id="ec_ah" value="${esc(c.authHeader||"")}"/></label>
+      <label class="field"><span>Auth prefix (e.g. Token / Basic)</span><input type="text" id="ec_ap" value="${esc(c.authPrefix||"")}"/></label>
+    </div>
+    <div class="row">
+      <label class="field"><span>Score JSON path</span><input type="text" id="ec_sp" value="${esc(c.scorePath||"")}" placeholder="e.g. rating or data.score"/></label>
+      <label class="field"><span>Grade JSON path</span><input type="text" id="ec_gp" value="${esc(c.gradePath||"")}"/></label>
+    </div>
+    <div class="row">
+      <label class="field"><span>Flag when score below</span><input type="number" id="ec_fb" value="${c.flagBelow!=null?esc(c.flagBelow):""}"/></label>
+      <label class="field"><span>Flag grades (comma-sep)</span><input type="text" id="ec_fg" value="${esc((c.flagGrades||[]).join(", "))}"/></label>
+    </div>
+    <label class="field"><span>Help text shown to analysts</span><input type="text" id="ec_help" value="${esc(c.help||"")}"/></label>
+  `,[
+    {label:"Cancel",cls:"gray",fn:closeModal},
+    {label:(i<0?"Add connector":"Save connector"),cls:"",fn:()=>{
+      const c2=modalState;
+      c2.name=el("ec_name").value.trim(); c2.type=el("ec_type").value.trim()||"Other";
+      c2.enabled=el("ec_en").value==="yes";
+      c2.endpoint=el("ec_ep").value.trim(); c2.identLabel=el("ec_il").value.trim()||"Identifier";
+      c2.authHeader=el("ec_ah").value.trim(); c2.authPrefix=el("ec_ap").value.trim();
+      c2.scorePath=el("ec_sp").value.trim(); c2.gradePath=el("ec_gp").value.trim();
+      c2.flagBelow=el("ec_fb").value===""? null : Number(el("ec_fb").value);
+      c2.flagGrades=el("ec_fg").value.split(",").map(s=>s.trim()).filter(Boolean);
+      c2.help=el("ec_help").value.trim();
+      if(!c2.name){ toast("Connector name required"); return; }
+      if(editCIndex<0) SCHEMA.screening.connectors.push(c2); else SCHEMA.screening.connectors[editCIndex]=c2;
+      saveSchema(); closeModal(); renderBuilder(); toast("Connector saved");
+    }}
+  ]);
+}
+
+/* ---- Question editor (with tier applicability) ---- */
+let editQIndex=-1, modalState=null;
+function editQuestion(i){
+  editQIndex=i;
+  const q = i<0? {id:"",riskArea:"",config:"Always",responseType:"single",text:"",guidance:"",triggerSummary:"",showIf:[],tiers:[1,2,3],options:[{value:"",label:"",score:0,triggers:[]}],weight:1} : clone(SCHEMA.questions[i]);
+  if(!q.tiers||!q.tiers.length) q.tiers=[1,2,3];
+  const domOpts=(SCHEMA.domains||[]).map(d=>d.name);
+  function optRow(o,idx){
+    const chk=domOpts.map(dn=>{
+      const on=(o.triggers||[]).some(t=>t.domain===dn);
+      return `<label class="${on?'on':''}"><input type="checkbox" data-otrig="${idx}" value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;
+    }).join("");
+    const note=(o.triggers||[]).map(t=>t.note).filter(Boolean).join(" | ");
+    return `<div class="sub-card" data-optblock="${idx}">
+      <div class="opt-edit">
+        <input type="text" data-oval="${idx}" placeholder="value" value="${esc(o.value)}"/>
+        <input type="text" data-olab="${idx}" placeholder="label shown to user" value="${esc(o.label)}"/>
+        <input type="number" data-osc="${idx}" placeholder="score" value="${esc(o.score||0)}"/>
+      </div>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 2px">Triggers domains:</div>
+      <div class="checks">${chk}</div>
+      <input type="text" data-onote="${idx}" placeholder="focus note (optional)" value="${esc(note)}" style="margin-top:6px"/>
+      <div style="text-align:right;margin-top:6px"><button class="btn danger sm" data-odel="${idx}">Remove option</button></div>
+    </div>`;
+  }
+  function condRows(){
+    return (q.showIf||[]).map((c,idx)=>`
+      <div class="cond-row">
+        <select data-scq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+        <select data-scop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+        <input type="text" data-scv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values, comma-sep"/>
+        <button class="btn danger sm" data-scdel="${idx}">✕</button>
+      </div>`).join("");
+  }
+  openModal(i<0?"Add question":"Edit "+q.id, `
+    <div class="row">
+      <label class="field"><span>Question ID</span><input type="text" id="eq_id" value="${esc(q.id)}"/></label>
+      <label class="field"><span>Risk area</span><input type="text" id="eq_area" value="${esc(q.riskArea||"")}"/></label>
+      <label class="field"><span>Configuration</span><select id="eq_config"><option ${q.config==="Always"?"selected":""}>Always</option><option ${q.config==="Conditional"?"selected":""}>Conditional</option></select></label>
+    </div>
+    <label class="field"><span>Applies to tiers</span>
+      <span class="checks">
+        <label class="${q.tiers.includes(1)?'on':''}"><input type="checkbox" id="eq_t1" ${q.tiers.includes(1)?'checked':''}/>Tier 1</label>
+        <label class="${q.tiers.includes(2)?'on':''}"><input type="checkbox" id="eq_t2" ${q.tiers.includes(2)?'checked':''}/>Tier 2</label>
+        <label class="${q.tiers.includes(3)?'on':''}"><input type="checkbox" id="eq_t3" ${q.tiers.includes(3)?'checked':''}/>Tier 3</label>
+      </span></label>
+    <label class="field"><span>Question text</span><textarea id="eq_text">${esc(q.text)}</textarea></label>
+    <label class="field"><span>User guidance</span><textarea id="eq_guide">${esc(q.guidance||"")}</textarea></label>
+    <label class="field"><span>Trigger logic summary (shown to assessor)</span><textarea id="eq_trig">${esc(q.triggerSummary||"")}</textarea></label>
+    <label class="field"><span>Score weight (multiplier)</span><input type="number" id="eq_weight" value="${esc(q.weight||1)}" style="max-width:120px"/></label>
+    <h3>Display condition (only show this question if…)</h3>
+    <div id="eq_conds">${condRows()}</div>
+    <button class="btn gray sm" id="eq_addcond">+ Add condition</button>
+    <h3 style="margin-top:16px">Options &amp; per-option triggers</h3>
+    <div id="eq_opts">${(q.options||[]).map(optRow).join("")}</div>
+    <button class="btn gray sm" id="eq_addopt">+ Add option</button>
+  `, [
+    {label:"Cancel", cls:"gray", fn:closeModal},
+    {label:(i<0?"Add question":"Save question"), cls:"", fn:()=>saveQuestionFromModal()}
+  ]);
+  modalState=q;
+  ["eq_t1","eq_t2","eq_t3"].forEach(id=> el(id).addEventListener("change",e=> e.target.closest("label").classList.toggle("on", e.target.checked)));
+  el("eq_addopt").addEventListener("click",()=>{ modalState.options=collectOptions(); modalState.options.push({value:"",label:"",score:0,triggers:[]}); reopenQuestionOpts(); });
+  el("eq_addcond").addEventListener("click",()=>{ modalState.showIf=collectConds(); modalState.showIf.push({q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}); reopenQuestionConds(); });
+  bindOptHandlers(); bindCondHandlers();
+}
+function bindOptHandlers(){
+  el("eq_opts").querySelectorAll("[data-odel]").forEach(b=>b.addEventListener("click",()=>{ modalState.options=collectOptions(); modalState.options.splice(+b.dataset.odel,1); reopenQuestionOpts(); }));
+  el("eq_opts").querySelectorAll(".checks input").forEach(c=>c.addEventListener("change",e=>{ e.target.closest("label").classList.toggle("on",e.target.checked); }));
+}
+function bindCondHandlers(){
+  el("eq_conds").querySelectorAll("[data-scdel]").forEach(b=>b.addEventListener("click",()=>{ modalState.showIf=collectConds(); modalState.showIf.splice(+b.dataset.scdel,1); reopenQuestionConds(); }));
+}
+function reopenQuestionOpts(){
+  const domOpts=(SCHEMA.domains||[]).map(d=>d.name);
+  el("eq_opts").innerHTML=modalState.options.map((o,idx)=>{
+    const chk=domOpts.map(dn=>{const on=(o.triggers||[]).some(t=>t.domain===dn);return `<label class="${on?'on':''}"><input type="checkbox" data-otrig="${idx}" value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;}).join("");
+    const note=(o.triggers||[]).map(t=>t.note).filter(Boolean).join(" | ");
+    return `<div class="sub-card"><div class="opt-edit">
+      <input type="text" data-oval="${idx}" placeholder="value" value="${esc(o.value)}"/>
+      <input type="text" data-olab="${idx}" placeholder="label" value="${esc(o.label)}"/>
+      <input type="number" data-osc="${idx}" placeholder="score" value="${esc(o.score||0)}"/></div>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 2px">Triggers domains:</div>
+      <div class="checks">${chk}</div>
+      <input type="text" data-onote="${idx}" placeholder="focus note (optional)" value="${esc(note)}" style="margin-top:6px"/>
+      <div style="text-align:right;margin-top:6px"><button class="btn danger sm" data-odel="${idx}">Remove option</button></div></div>`;
+  }).join("");
+  bindOptHandlers();
+}
+function reopenQuestionConds(){
+  el("eq_conds").innerHTML=(modalState.showIf||[]).map((c,idx)=>`
+    <div class="cond-row">
+      <select data-scq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+      <select data-scop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+      <input type="text" data-scv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values"/>
+      <button class="btn danger sm" data-scdel="${idx}">✕</button>
+    </div>`).join("");
+  bindCondHandlers();
+}
+function collectOptions(){
+  const blocks=el("eq_opts").children; const out=[];
+  for(let idx=0;idx<blocks.length;idx++){
+    const root=blocks[idx];
+    const val=root.querySelector(`[data-oval="${idx}"]`).value.trim();
+    const lab=root.querySelector(`[data-olab="${idx}"]`).value.trim();
+    const sc=Number(root.querySelector(`[data-osc="${idx}"]`).value)||0;
+    const note=root.querySelector(`[data-onote="${idx}"]`).value.trim();
+    const doms=[...root.querySelectorAll('.checks input:checked')].map(c=>c.value);
+    const triggers=doms.map((d,k)=>({domain:d, note:(k===0&&note)? note : undefined}));
+    out.push({value:val,label:lab,score:sc,triggers:triggers.map(t=>t.note?{domain:t.domain,note:t.note}:{domain:t.domain})});
+  }
+  return out;
+}
+function collectConds(){
+  const rows=el("eq_conds").children; const out=[];
+  for(let idx=0;idx<rows.length;idx++){
+    const root=rows[idx];
+    out.push({
+      q:root.querySelector(`[data-scq="${idx}"]`).value,
+      op:root.querySelector(`[data-scop="${idx}"]`).value,
+      vals:root.querySelector(`[data-scv="${idx}"]`).value.split(",").map(s=>s.trim()).filter(Boolean)
+    });
+  }
+  return out;
+}
+function saveQuestionFromModal(){
+  const q=modalState;
+  q.id=el("eq_id").value.trim(); q.riskArea=el("eq_area").value.trim();
+  q.config=el("eq_config").value; q.responseType="single";
+  q.text=el("eq_text").value.trim(); q.guidance=el("eq_guide").value.trim();
+  q.triggerSummary=el("eq_trig").value.trim(); q.weight=Number(el("eq_weight").value)||1;
+  q.tiers=[1,2,3].filter(t=>el("eq_t"+t).checked);
+  if(!q.tiers.length) q.tiers=[1,2,3];
+  q.showIf=collectConds(); q.options=collectOptions();
+  if(!q.id){ toast("Question ID required"); return; }
+  if(editQIndex<0) SCHEMA.questions.push(q); else SCHEMA.questions[editQIndex]=q;
+  saveSchema(); closeModal(); renderBuilder(); toast("Question saved");
+}
+
+/* ---- Rule editor ---- */
+let editRIndex=-1;
+function editRule(i){
+  editRIndex=i;
+  const r = i<0? {label:"",when:[{q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}],then:[]} : clone(SCHEMA.rules[i]);
+  modalState=r;
+  const domOpts=(SCHEMA.domains||[]).map(d=>d.name);
+  const thenChk=domOpts.map(dn=>{const on=(r.then||[]).some(t=>t.domain===dn);return `<label class="${on?'on':''}"><input type="checkbox" data-rthen value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;}).join("");
+  openModal(i<0?"Add rule":"Edit rule", `
+    <label class="field"><span>Rule label</span><input type="text" id="er_label" value="${esc(r.label||"")}" placeholder="Plain-English description"/></label>
+    <h3>Conditions (ALL must match)</h3>
+    <div id="er_conds"></div>
+    <button class="btn gray sm" id="er_addcond">+ Add condition</button>
+    <h3 style="margin-top:14px">Then trigger domains</h3>
+    <div class="checks" id="er_then">${thenChk}</div>
+    <label class="field" style="margin-top:8px"><span>Focus note (optional, applied to first domain)</span><input type="text" id="er_note" value="${esc((r.then&&r.then[0]&&r.then[0].note)||"")}"/></label>
+  `,[
+    {label:"Cancel",cls:"gray",fn:closeModal},
+    {label:(i<0?"Add rule":"Save rule"),cls:"",fn:saveRuleFromModal}
+  ]);
+  renderRuleConds();
+  el("er_addcond").addEventListener("click",()=>{ modalState.when=collectRuleConds(); modalState.when.push({q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}); renderRuleConds(); });
+  el("er_then").querySelectorAll("input").forEach(c=>c.addEventListener("change",e=>e.target.closest("label").classList.toggle("on",e.target.checked)));
+}
+function renderRuleConds(){
+  el("er_conds").innerHTML=(modalState.when||[]).map((c,idx)=>`
+    <div class="cond-row">
+      <select data-rcq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+      <select data-rcop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+      <input type="text" data-rcv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values"/>
+      <button class="btn danger sm" data-rcdel="${idx}">✕</button>
+    </div>`).join("");
+  el("er_conds").querySelectorAll("[data-rcdel]").forEach(b=>b.addEventListener("click",()=>{ modalState.when=collectRuleConds(); modalState.when.splice(+b.dataset.rcdel,1); renderRuleConds(); }));
+}
+function collectRuleConds(){
+  const rows=el("er_conds").children; const out=[];
+  for(let idx=0;idx<rows.length;idx++){const root=rows[idx];
+    out.push({q:root.querySelector(`[data-rcq="${idx}"]`).value,op:root.querySelector(`[data-rcop="${idx}"]`).value,
+      vals:root.querySelector(`[data-rcv="${idx}"]`).value.split(",").map(s=>s.trim()).filter(Boolean)});}
+  return out;
+}
+function saveRuleFromModal(){
+  const r=modalState; r.label=el("er_label").value.trim(); r.when=collectRuleConds();
+  const doms=[...el("er_then").querySelectorAll("input:checked")].map(c=>c.value);
+  const note=el("er_note").value.trim();
+  r.then=doms.map((d,k)=>(k===0&&note)?{domain:d,note:note}:{domain:d});
+  if(!r.label){ toast("Add a rule label"); return; }
+  if(editRIndex<0) SCHEMA.rules.push(r); else SCHEMA.rules[editRIndex]=r;
+  saveSchema(); closeModal(); renderBuilder(); toast("Rule saved");
+}
+
+/* ============================================================
+   IMPORT / EXPORT SCHEMA + EXCEL RE-IMPORT
+   ============================================================ */
+function exportSchema(){
+  const out=clone(SCHEMA); // never include secrets
+  download(`TPRM_config_${SCHEMA.meta.version||"1"}_${today()}.json`, JSON.stringify(out,null,2), "application/json");
+}
+function importSchemaFile(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+    const obj=JSON.parse(fr.result);
+    if(obj.questions && obj.meta){ SCHEMA=migrate(obj); saveSchema(); renderBuilder(); toast("Configuration imported"); }
+    else toast("Not a valid configuration JSON");
+  }catch(e){ toast("Could not parse JSON"); } };
+  fr.readAsText(file);
+}
+function resetSchema(){ if(confirm("Reset the entire configuration (tiering, gating, connectors, IRQ) to the built-in default? Saved records are kept.")){ SCHEMA=clone(DEFAULT_SCHEMA); saveSchema(); renderBuilder(); toast("Reset to default"); } }
+
+function importExcel(file){
+  loadSheetJS().then(()=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(fr.result),{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+        mergeExcel(rows);
+      }catch(e){ toast("Excel parse failed: "+e.message); }
+    };
+    fr.readAsArrayBuffer(file);
+  }).catch(()=> toast("Could not load Excel reader (needs internet for first use)."));
+}
+function loadSheetJS(){
+  return new Promise((res,rej)=>{
+    if(window.XLSX) return res();
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=()=>res(); s.onerror=()=>rej();
+    document.head.appendChild(s);
+  });
+}
+function parseOptions(cell){
+  if(!cell) return [];
+  let parts=String(cell).split(/\r?\n|\s\|\s/).map(s=>s.trim()).filter(Boolean);
+  if(parts.length<=1){ parts=String(cell).split(/(?=\d+[\).\-]\s)/).map(s=>s.trim()).filter(Boolean); }
+  return parts.map(p=> p.replace(/^\s*\d+\s*[\).\-:]\s*/,"").trim()).filter(Boolean);
+}
+function mergeExcel(rows){
+  let hi=-1;
+  for(let i=0;i<Math.min(rows.length,12);i++){
+    const a=String(rows[i][0]||"").toLowerCase().trim();
+    const cells=rows[i].map(x=>String(x).toLowerCase().trim());
+    const isHeader = a.startsWith("q. no")||a.startsWith("q.no")||a==="q no"||a.startsWith("q. number")||a.startsWith("q.number")
+       || (cells.includes("risk area") && cells.includes("question"));
+    if(isHeader){ hi=i; break; }
+  }
+  if(hi<0) hi=2;
+  const dataRows=rows.slice(hi+1).filter(r=> String(r[0]||"").trim()!=="");
+  if(!dataRows.length){ toast("No question rows found in Excel"); return; }
+  let added=0, updated=0; const seen=[];
+  dataRows.forEach(r=>{
+    const id=String(r[0]||"").trim(); if(!id) return;
+    if(/^q\.?\s*no/i.test(id)) return;
+    seen.push(id);
+    const area=String(r[1]||"").trim();
+    const text=String(r[2]||"").trim();
+    const cfgRaw=String(r[3]||"").trim();
+    const config = cfgRaw ? (/^always/i.test(cfgRaw)?"Always":"Conditional") : "Always";
+    const optLabels=parseOptions(r[5]);
+    const guidance=String(r[6]||"").trim();
+    const trig=String(r[7]||"").trim();
+    const existing=(SCHEMA.questions||[]).find(q=>q.id===id);
+    if(existing){
+      existing.riskArea=area||existing.riskArea;
+      existing.text=text||existing.text;
+      existing.config=config;
+      existing.guidance=guidance||existing.guidance;
+      if(trig) existing.triggerSummary=trig;
+      if(optLabels.length){
+        const prevOpts=existing.options||[];
+        const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"");
+        if(prevOpts.length===optLabels.length){
+          existing.options=optLabels.map((lbl,k)=>Object.assign({}, prevOpts[k], {label:lbl}));
+        } else {
+          existing.options=optLabels.map(lbl=>{
+            const prev=prevOpts.find(o=>norm(o.label)===norm(lbl)||norm(o.value)===norm(lbl));
+            return prev? Object.assign({}, prev, {label:lbl}) : {value:lbl, label:lbl, score:0, triggers:[]};
+          });
+        }
+      }
+      updated++;
+    } else {
+      SCHEMA.questions.push({
+        id, riskArea:area, config, responseType:"single", text,
+        guidance, triggerSummary:trig, showIf:[], tiers:[1,2,3],
+        options: optLabels.map(lbl=>({value:lbl,label:lbl,score:0,triggers:[]}))
+      });
+      added++;
+    }
+  });
+  const missing=(SCHEMA.questions||[]).map(q=>q.id).filter(id=>!seen.includes(id));
+  saveSchema(); renderBuilder();
+  let msg=`Imported: ${added} new, ${updated} updated.`;
+  if(missing.length) msg+=` Review: ${missing.length} existing question(s) not in file (${missing.join(", ")}).`;
+  if(added) msg+=" Set triggers/scores/tiers for new questions in the Builder.";
+  alert(msg);
+  toast("Excel import complete");
+}
+
+/* ============================================================
+   MODAL + TOAST + NAV
+   ============================================================ */
+function openModal(title, bodyHTML, buttons){
+  el("modalTitle").textContent=title; el("modalBody").innerHTML=bodyHTML;
+  const foot=el("modalFoot"); foot.innerHTML="";
+  (buttons||[]).forEach(b=>{ const btn=document.createElement("button"); btn.className="btn "+(b.cls||""); btn.textContent=b.label; btn.onclick=b.fn; foot.appendChild(btn); });
+  el("modalBg").classList.add("show");
+}
+function closeModal(){ el("modalBg").classList.remove("show"); modalState=null; }
+let toastT=null;
+function toast(msg){ const t=el("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600); }
+function switchView(v){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
+  ["dashboard","assess","builder","help"].forEach(name=> el("view-"+name).classList.toggle("hide", name!==v));
+  if(v==="dashboard") renderDashboard();
+  if(v==="builder") renderBuilder();
+  if(v==="assess") setStage(curStage);
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+document.querySelectorAll("nav.tabs button").forEach(b=> b.addEventListener("click",()=>switchView(b.dataset.view)));
+document.querySelectorAll("#stepper button").forEach(b=> b.addEventListener("click",()=>{
+  const s=+b.dataset.stage;
+  if(s>Math.max(V.stage||1,curStage)){ toast("Complete the earlier stages first"); return; }
+  if(curStage===1) gatherStage1();
+  if(curStage===3) gatherStage3();
+  setStage(s);
+}));
+el("modalX").addEventListener("click",closeModal);
+el("modalBg").addEventListener("click",e=>{ if(e.target===el("modalBg")) closeModal(); });
+
+/* stage transitions */
+el("s1Next").addEventListener("click",()=>{
+  gatherStage1();
+  if(!V.company.name){ toast("Enter the company name first"); el("c_name").focus(); return; }
+  const t=curTier();
+  if(!t.answeredCount){ toast("Answer the tiering factors first"); return; }
+  V.stage=Math.max(V.stage||1,2); saveVendor(true); setStage(2);
+});
+el("s2Back").addEventListener("click",()=> setStage(1));
+el("s2Next").addEventListener("click",()=>{
+  const r=curIRQ();
+  if(!r.answered){ toast("Answer the IRQ first"); return; }
+  if(r.answered<r.visibleCount && !confirm("The IRQ is not fully answered ("+r.answered+"/"+r.visibleCount+"). Continue anyway?")) return;
+  V.stage=Math.max(V.stage||1,3); saveVendor(true); setStage(3);
+});
+el("s3Back").addEventListener("click",()=>{ gatherStage3(); setStage(2); });
+el("s3Next").addEventListener("click",()=>{
+  gatherStage3();
+  const g=curScreenGate();
+  if(g.required && !V.screening.verdict){
+    if(!confirm("Screening is required for this third party but no verdict has been recorded. Continue to Due Diligence anyway?")) return;
+  }
+  V.stage=Math.max(V.stage||1,4); saveVendor(true); setStage(4);
+});
+el("s4Back").addEventListener("click",()=> setStage(3));
+el("completeBtn").addEventListener("click",()=>{
+  const route=curRoute();
+  if(route.track!=="None"){
+    const scoped = route.track==="EDDQ"? (SCHEMA.domains||[]).map(d=>d.name) : curIRQ().domains.map(d=>d.name);
+    const open=scoped.filter(n=>{ const it=V.ddq.items[n]||{}; return (it.status||DDQ_STATUSES[0])!=="Closed"; });
+    if(open.length && !confirm(open.length+" domain(s) are not yet Closed. Mark the assessment complete anyway?")) return;
+  }
+  V.done=true; V.stage=4;
+  if(saveVendor(true)){ toast("Assessment marked complete"); renderSide(); }
+});
+
+/* side buttons */
+el("saveBtn").addEventListener("click",()=>saveVendor(false));
+el("pdfBtn").addEventListener("click",buildReport);
+el("csvBtn").addEventListener("click",exportCSV);
+el("jsonBtn").addEventListener("click",exportJSON);
+el("checklistBtn").addEventListener("click",exportChecklist);
+el("clearBtn").addEventListener("click",()=>{ if(confirm("Start a new assessment? Unsaved changes to the current one are lost.")) newVendor(); });
+
+/* dashboard buttons */
+el("newVendorBtn").addEventListener("click",newVendor);
+el("exportAllBtn").addEventListener("click",()=> download(`TPRM_all_records_${today()}.json`, JSON.stringify(loadRecords(),null,2), "application/json"));
+el("importRecordsBtn").addEventListener("click",()=>{ el("fileInput").dataset.mode="records"; el("fileInput").click(); });
+
+/* builder buttons */
+el("addQBtn").addEventListener("click",()=>editQuestion(-1));
+el("addRuleBtn").addEventListener("click",()=>editRule(-1));
+el("addFactorBtn").addEventListener("click",()=>editFactor(-1));
+el("addConnBtn").addEventListener("click",()=>editConnector(-1));
+el("saveMetaBtn").addEventListener("click",()=>{ SCHEMA.meta.title=el("b_title").value; SCHEMA.meta.org=el("b_org").value; SCHEMA.meta.version=el("b_version").value; SCHEMA.meta.answeredBy=el("b_answeredBy").value; SCHEMA.meta.updated=el("b_updated").value; saveSchema(); applyBrand(); toast("Details saved"); });
+el("saveGatingBtn").addEventListener("click",()=>{
+  SCHEMA.gating=SCHEMA.gating||{};
+  SCHEMA.gating.screening={ "1":el("g_scr_1").value, "2":el("g_scr_2").value, "3":el("g_scr_3").value };
+  SCHEMA.gating.eddq={
+    tiers:[1,2,3].filter(t=>el("g_eddq_t"+t).checked),
+    minRating:el("g_eddq_band").value,
+    onAdverse:el("g_eddq_adv").value==="yes"
+  };
+  saveSchema(); toast("Gating rules saved");
+});
+[1,2,3].forEach(t=> el("g_eddq_t"+t).addEventListener("change",e=> el("lg_t"+t).classList.toggle("on", e.target.checked)));
+el("saveEddqBtn").addEventListener("click",()=>{
+  SCHEMA.eddqEvidence=el("b_eddqEvidence").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  saveSchema(); toast("Evidence list saved");
+});
+el("addDomainBtn").addEventListener("click",()=>{ const n=el("newDomain").value.trim(); if(!n)return; SCHEMA.domains.push({name:n,desc:"",auto:false}); el("newDomain").value=""; saveSchema(); renderBuilder(); });
+el("addBandBtn").addEventListener("click",()=>{ SCHEMA.bands.push({label:"New",min:0,max:0,color:"#64748b"}); saveSchema(); renderBuilder(); });
+el("exportJsonBtn").addEventListener("click",exportSchema);
+el("importJsonBtn").addEventListener("click",()=>{ el("fileInput").dataset.mode="schema"; el("fileInput").click(); });
+el("resetSchemaBtn").addEventListener("click",resetSchema);
+el("importExcelBtn").addEventListener("click",()=> el("excelInput").click());
+el("excelInput").addEventListener("change",e=>{ if(e.target.files[0]) importExcel(e.target.files[0]); e.target.value=""; });
+el("fileInput").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(el("fileInput").dataset.mode==="records"){
+    const fr=new FileReader(); fr.onload=()=>{ try{ const arr=JSON.parse(fr.result); if(Array.isArray(arr)){ const cur=loadRecords(); const ids=new Set(cur.map(x=>x.id)); arr.forEach(r=>{ if(!r.id)r.id=uid(); if(ids.has(r.id))r.id=uid(); cur.push(r); }); saveRecords(cur); renderDashboard(); toast("Records imported"); } else toast("Expected a JSON array"); }catch(err){ toast("Could not parse JSON"); } };
+    fr.readAsText(f);
+  } else { importSchemaFile(f); }
+  e.target.value="";
+});
+
+function applyBrand(){
+  el("brandTitle").textContent=SCHEMA.meta.title||"TPRM Lifecycle Platform";
+  el("brandSub").textContent=(SCHEMA.meta.org? SCHEMA.meta.org+" · ":"")+"Tiering · Inherent Risk · Screening · Due Diligence";
+  el("brandLogo").textContent=(SCHEMA.meta.org||"TPRM").slice(0,4).toUpperCase();
+}
+
+/* ---- init ---- */
+function init(){
+  migrateLegacyRecords();
+  applyBrand();
+  renderDashboard();
+  setStage(1);
+  switchView("dashboard");
+}
+init();
+</script>
+</body>
+</html>

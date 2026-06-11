@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Inherent Risk Assessment (IRA)</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --soft:#f8fafc; --brand:#4338ca; --brand2:#6366f1; --brandink:#eef2ff;
+    --ok:#16a34a; --low:#16a34a; --med:#d97706; --high:#ea580c; --crit:#dc2626; --min:#0891b2;
+    --chip:#eef2ff; --chipink:#3730a3; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#eef1f6;line-height:1.5;font-size:15px}
+  a{color:var(--brand)}
+  /* Header */
+  header.app{background:linear-gradient(120deg,#312e81,#4338ca 55%,#6366f1);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 14px rgba(15,23,42,.18)}
+  header.app .logo{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;letter-spacing:.5px}
+  header.app h1{font-size:16px;margin:0;font-weight:700}
+  header.app .sub{font-size:12px;opacity:.85;margin-top:1px}
+  header.app .spacer{flex:1}
+  nav.tabs{display:flex;gap:4px;background:rgba(255,255,255,.12);padding:4px;border-radius:11px}
+  nav.tabs button{background:transparent;border:0;color:#e0e7ff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap}
+  nav.tabs button.active{background:#fff;color:var(--brand)}
+  /* Layout */
+  main{max-width:1240px;margin:22px auto;padding:0 18px 80px}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card h3{margin:18px 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .muted{color:var(--muted)}
+  .hr{height:1px;background:var(--line);margin:16px 0;border:0}
+  /* Sticky result panel */
+  .side{position:sticky;top:88px}
+  @media(max-width:980px){.side{position:static}}
+  /* Forms */
+  label.field{display:block;margin:10px 0}
+  label.field > span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-offset:0;border-color:transparent}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:160px}
+  /* Buttons */
+  button.btn{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:9px 15px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  button.btn:hover{filter:brightness(1.06)}
+  button.btn.ghost{background:#fff;color:var(--brand)}
+  button.btn.soft{background:var(--brandink);color:var(--brand);border-color:var(--brandink)}
+  button.btn.gray{background:#fff;color:var(--ink);border-color:var(--line)}
+  button.btn.danger{background:#fff;color:var(--crit);border-color:#fecaca}
+  button.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:8px}
+  .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  /* Question block */
+  .q{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;background:#fff;transition:border-color .15s}
+  .q.answered{border-color:#c7d2fe;background:#fbfcff}
+  .q .qhead{display:flex;align-items:flex-start;gap:10px}
+  .qid{font-weight:800;color:var(--brand);font-size:13px;background:var(--brandink);padding:3px 8px;border-radius:7px;white-space:nowrap}
+  .qtext{font-weight:600}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--soft);white-space:nowrap}
+  .badge.cond{color:#9a3412;background:#fff7ed;border-color:#fed7aa}
+  .opts{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer}
+  .opt:hover{background:var(--soft)}
+  .opt.sel{border-color:var(--brand);background:var(--brandink)}
+  .opt input{margin-top:3px}
+  .opt .ol{flex:1}
+  .guide{margin-top:10px;font-size:13px;color:var(--muted);background:var(--soft);border:1px dashed var(--line);border-radius:9px;padding:10px;white-space:pre-wrap;display:none}
+  .guide.show{display:block}
+  .linklike{color:var(--brand);font-size:12.5px;cursor:pointer;font-weight:600;user-select:none}
+  .trigsum{margin-top:8px;font-size:12.5px;color:#475569;background:#f1f5f9;border-left:3px solid var(--brand2);border-radius:6px;padding:8px 10px;white-space:pre-wrap;display:none}
+  .trigsum.show{display:block}
+  /* Result widgets */
+  .ratingbox{border-radius:12px;padding:16px;color:#fff;text-align:center}
+  .ratingbox .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+  .ratingbox .val{font-size:30px;font-weight:800;margin:2px 0}
+  .ratingbox .score{font-size:13px;opacity:.95}
+  .meter{height:10px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin-top:10px}
+  .meter > i{display:block;height:100%;border-radius:999px}
+  .domchip{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin:7px 0;background:#fff}
+  .domchip .dn{font-weight:700;font-size:13.5px}
+  .domchip .note{font-size:12px;color:var(--muted);margin-top:2px}
+  .domchip .src{font-size:11px;color:#94a3b8;margin-top:3px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+  .pill.auto{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:18px;border:1px dashed var(--line);border-radius:10px}
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  tr:hover td{background:var(--soft)}
+  .tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:30px 14px;overflow:auto}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:14px;max-width:760px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .modal .mh h3{margin:0;font-size:16px}
+  .modal .mb{padding:18px 20px;max-height:70vh;overflow:auto}
+  .modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+  .x{cursor:pointer;border:0;background:#f1f5f9;width:32px;height:32px;border-radius:8px;font-size:18px;color:var(--muted)}
+  .sub-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;background:var(--soft)}
+  .opt-edit{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:start;margin-bottom:8px}
+  .cond-row{display:grid;grid-template-columns:1fr 110px 1fr 34px;gap:8px;align-items:center;margin-bottom:7px}
+  .checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .checks label{font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:4px 8px;background:#fff;cursor:pointer;display:flex;gap:5px;align-items:center}
+  .checks label.on{background:var(--brandink);border-color:var(--brand);color:var(--brand);font-weight:600}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:200;opacity:0;transition:opacity .2s, transform .2s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi .k{flex:1;min-width:90px;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;background:#fff}
+  .kpi .k b{display:block;font-size:22px}
+  .kpi .k span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .hide{display:none!important}
+  .note-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:9px;padding:10px 12px;font-size:13px}
+  .help-list{font-size:14px}
+  .help-list li{margin:6px 0}
+  code.k{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px}
+  /* Report / print */
+  #report{display:none}
+  @media print{
+    header.app,nav.tabs,.side,.btnbar,.app-only,.no-print{display:none!important}
+    body{background:#fff}
+    main{margin:0;max-width:none;padding:0}
+    #report{display:block!important;padding:24px}
+    .view:not(#view-report){display:none!important}
+    .rep-h{display:flex;justify-content:space-between;border-bottom:3px solid var(--brand);padding-bottom:10px;margin-bottom:14px}
+    .rep-section{margin:16px 0;page-break-inside:avoid}
+    table{font-size:12px}
+  }
+  #report .rep-h{display:flex;justify-content:space-between;border-bottom:3px solid var(--brand);padding-bottom:10px;margin-bottom:14px}
+  #report .rep-section{margin:16px 0}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="logo" id="brandLogo">IRA</div>
+  <div>
+    <h1 id="brandTitle">Inherent Risk Assessment</h1>
+    <div class="sub" id="brandSub">Third-Party Risk Management</div>
+  </div>
+  <div class="spacer"></div>
+  <nav class="tabs">
+    <button data-view="assess" class="active">Assess</button>
+    <button data-view="records">Records</button>
+    <button data-view="builder">Questionnaire Builder</button>
+    <button data-view="help">Help</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ ASSESS ============ -->
+  <section id="view-assess" class="view">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>New Inherent Risk Assessment</h2>
+          <p class="muted" style="margin-top:4px" id="assessIntro"></p>
+          <div class="row">
+            <label class="field"><span>Vendor / Third-Party name *</span><input type="text" id="m_vendor" placeholder="e.g. Acme Cloud Ltd"/></label>
+            <label class="field"><span>Service / Engagement</span><input type="text" id="m_service" placeholder="e.g. Payroll SaaS"/></label>
+          </div>
+          <div class="row">
+            <label class="field"><span>Service Owner (assessor)</span><input type="text" id="m_owner" placeholder="Name"/></label>
+            <label class="field"><span>Business unit</span><input type="text" id="m_bu" placeholder="e.g. Finance"/></label>
+            <label class="field"><span>Assessment date</span><input type="date" id="m_date"/></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <h2 id="qTitle">Questionnaire</h2>
+            <span class="muted" id="qProgress"></span>
+          </div>
+          <div id="questions"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="side">
+        <div class="card">
+          <h2 style="margin-bottom:10px">Live Result</h2>
+          <div id="ratingWrap"></div>
+          <div class="kpi" style="margin-top:12px">
+            <div class="k"><b id="kDomains">0</b><span>Domains in scope</span></div>
+            <div class="k"><b id="kAnswered">0</b><span>Answered</span></div>
+          </div>
+          <h3>DDQ scope triggered</h3>
+          <div id="domainsOut"><div class="empty">Answer questions to see which due-diligence domains are scoped in.</div></div>
+          <div class="btnbar app-only" style="margin-top:14px">
+            <button class="btn" id="saveBtn">Save assessment</button>
+            <button class="btn ghost sm" id="pdfBtn">PDF report</button>
+          </div>
+          <div class="btnbar app-only">
+            <button class="btn gray sm" id="csvBtn">CSV</button>
+            <button class="btn gray sm" id="jsonBtn">JSON</button>
+            <button class="btn gray sm" id="checklistBtn">Checklist CSV</button>
+            <button class="btn gray sm" id="clearBtn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECORDS ============ -->
+  <section id="view-records" class="view hide">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <h2>Saved Assessments</h2>
+        <div class="btnbar">
+          <button class="btn ghost sm" id="exportAllBtn">Export all (JSON)</button>
+          <button class="btn gray sm" id="importRecordsBtn">Import records</button>
+        </div>
+      </div>
+      <p class="muted">Stored locally in this browser. Use Export to back up or move between machines.</p>
+      <div id="recordsTable"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUILDER ============ -->
+  <section id="view-builder" class="view hide">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <h2>Questionnaire Builder</h2>
+        <div class="btnbar">
+          <button class="btn soft sm" id="importExcelBtn">Update from Excel (.xlsx)</button>
+          <button class="btn gray sm" id="importJsonBtn">Import JSON</button>
+          <button class="btn gray sm" id="exportJsonBtn">Export JSON</button>
+          <button class="btn danger sm" id="resetSchemaBtn">Reset to default</button>
+        </div>
+      </div>
+      <p class="muted">Edit the questionnaire here — changes apply immediately to the Assess tab and are saved in this browser. Export the JSON to version-control or share it.</p>
+
+      <h3>Questionnaire details</h3>
+      <div class="row">
+        <label class="field"><span>Title</span><input type="text" id="b_title"/></label>
+        <label class="field"><span>Organisation</span><input type="text" id="b_org"/></label>
+      </div>
+      <div class="row">
+        <label class="field"><span>Version</span><input type="text" id="b_version"/></label>
+        <label class="field"><span>Answered by</span><input type="text" id="b_answeredBy"/></label>
+        <label class="field"><span>Last updated</span><input type="text" id="b_updated" placeholder="YYYY-MM-DD"/></label>
+      </div>
+      <div class="btnbar"><button class="btn sm" id="saveMetaBtn">Save details</button></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>Questions</h2>
+        <button class="btn sm" id="addQBtn">+ Add question</button>
+      </div>
+      <div id="builderQuestions"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2>Cross-question rules</h2>
+        <button class="btn sm" id="addRuleBtn">+ Add rule</button>
+      </div>
+      <p class="muted">Rules that trigger DDQ domains based on combinations of answers (evaluated in addition to per-option triggers).</p>
+      <div id="builderRules"></div>
+    </div>
+
+    <div class="card">
+      <h2>DDQ domains / focus areas</h2>
+      <p class="muted">The catalogue of due-diligence domains an answer can scope in.</p>
+      <div id="builderDomains"></div>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="newDomain" placeholder="New domain name"/>
+        <button class="btn sm" id="addDomainBtn" style="flex:0 0 auto">Add domain</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Inherent risk rating bands</h2>
+      <p class="muted">Score is the sum of selected option scores. Define the bands that map a total score to a rating.</p>
+      <div id="builderBands"></div>
+      <button class="btn sm" id="addBandBtn" style="margin-top:8px">+ Add band</button>
+    </div>
+  </section>
+
+  <!-- ============ HELP ============ -->
+  <section id="view-help" class="view hide">
+    <div class="card">
+      <h2>How this app works</h2>
+      <ul class="help-list">
+        <li><b>Assess</b> — A Service Owner records the vendor details and answers the IRQ. As answers are selected, the app shows the inherent-risk rating and the exact DDQ domains/focus areas that are scoped in, with the reason each was triggered.</li>
+        <li><b>Conditional questions</b> appear only when their display condition is met (e.g. CYB.02 only shows when CYB.01 is not "Not Applicable").</li>
+        <li><b>Records</b> — Saved assessments live in this browser (localStorage). Reopen, duplicate, export, or delete them. Use <i>Export all</i> to back up.</li>
+        <li><b>Questionnaire Builder</b> — Edit every question, option, trigger, rule, domain and rating band without touching code. This is how you keep the app current.</li>
+      </ul>
+
+      <h3>Updating after the IRQ changes</h3>
+      <ul class="help-list">
+        <li><b>Update from Excel (.xlsx)</b> — Re-import an updated IRQ spreadsheet. The app matches rows by Question ID and refreshes the question text, options, response type and guidance, while <b>preserving the trigger rules and scores you already configured</b> for matching IDs. New IDs are added; missing ones are flagged for review.</li>
+        <li><b>In-app editing</b> — Add/edit/remove questions, options, per-option triggers, cross-question rules, domains and bands directly.</li>
+        <li><b>Import / Export JSON</b> — The whole questionnaire is one JSON config. Export it to keep versioned copies; import to roll forward or share across the team.</li>
+      </ul>
+
+      <div class="note-warn" style="margin-top:14px">Excel re-import refreshes question content but cannot infer structured trigger logic from free text. After importing, review per-option triggers for any new/changed options in the Builder.</div>
+
+      <h3>Excel format expected</h3>
+      <p class="muted">First data columns, in order: <code class="k">Q. No.</code>, <code class="k">Risk Area</code>, <code class="k">Question</code>, <code class="k">Configuration</code>, <code class="k">Response Type</code>, <code class="k">Response Options</code>, <code class="k">User Guidance</code>, <code class="k">Trigger Logic</code>, <code class="k">Scoring</code>. Options within a cell are separated by new lines (e.g. <code class="k">1) Yes</code> / <code class="k">2) No</code>).</p>
+    </div>
+  </section>
+
+  <!-- Hidden printable report -->
+  <section id="view-report" class="view hide"></section>
+</main>
+
+<div id="report"></div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="mh"><h3 id="modalTitle">Edit</h3><button class="x" id="modalX">&times;</button></div>
+    <div class="mb" id="modalBody"></div>
+    <div class="mf" id="modalFoot"></div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" class="hide"/>
+<input type="file" id="excelInput" accept=".xlsx,.xls" class="hide"/>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   DEFAULT SCHEMA — encoded from Cyber_IRQ_Revised.xlsx (CYB.01–CYB.07)
+   ============================================================ */
+const DEFAULT_SCHEMA = {
+  meta:{
+    title:"Cyber & InfoSec Inherent Risk Questionnaire",
+    org:"Destinus",
+    version:"1.0",
+    answeredBy:"Service Owner (SO)",
+    updated:"2026-06-07"
+  },
+  // DDQ domains / focus areas that answers can scope in
+  domains:[
+    {name:"Cyber / InfoSec", desc:"Parent domain — in scope whenever the TP touches Destinus environment, systems or data.", auto:false},
+    {name:"Network & Communications Security", desc:"Firewalls, segmentation, pen testing, vulnerability scanning, malware protection.", auto:false},
+    {name:"Identity & Access Management", desc:"User & privileged access administration, least privilege, remote access, MFA.", auto:false},
+    {name:"Cloud Security", desc:"Cloud usage policy, cloud IAM, privileged cloud access, logical segregation.", auto:false},
+    {name:"Security Governance", desc:"Leadership accountability, policy, regulatory mapping, security assurance.", auto:true},
+    {name:"People Management", desc:"Screening, awareness training, phishing simulations, leaver controls.", auto:true},
+    {name:"Data Privacy", desc:"Data protection policy, DPIA, breach response, transfers, RoPA, sub-processors.", auto:false},
+    {name:"Artificial Intelligence", desc:"AI governance, model risk, bias, AI-specific data protection (DPIA).", auto:false},
+    {name:"Fourth Parties", desc:"Sub-processor / sub-contractor due diligence and flow-down obligations.", auto:false},
+    {name:"System Management", desc:"Patching, change management, backups, EoL, asset inventory, endpoint protection.", auto:false},
+    {name:"Threat & Incident Management", desc:"Logging & monitoring, SIEM, incident response, DDoS, database activity monitoring.", auto:false},
+    {name:"Information Management", desc:"Data classification, retention & deletion, DLP, data quality, secure destruction.", auto:false},
+    {name:"Physical & Environmental Security", desc:"Premises access, CCTV, visitor control, fire suppression, power protection.", auto:false},
+    {name:"System Development", desc:"Secure SDLC, security testing, source code protection, open-source controls.", auto:false}
+  ],
+  questions:[
+    {
+      id:"CYB.01", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Will the Third-party require access to Destinus environment that may lead to a security compromise?",
+      guidance:"Select the option representing the minimum necessary level of access for the TP to perform its service.\n1) Access to Destinus Network: direct, persistent connectivity to internal network (VPN, leased line, on-site).\n2) Access to Destinus Systems: logs into / interacts with Destinus-owned applications, servers or databases.\n3) Access to system hosting Data on behalf of Destinus: TP hosts cloud/SaaS/own servers that contain or process Destinus data.\n4) Access to Destinus Data only: interacts solely with data via secure mechanisms (APIs, encrypted transfers) without network/system access.",
+      triggerSummary:"Responses 1–4 put the Cyber/InfoSec domain in scope.\n• Option 1 → Network & Communications Security + Identity & Access Management\n• Option 2 → Identity & Access Management\n• Option 3 → Identity & Access Management + Cloud Security\n• Option 4 → IAM only if CYB.02 = Yes/Unsure (see rules)\nSecurity Governance and People Management are auto-triggered whenever Cyber is in scope.",
+      showIf:[],
+      options:[
+        {value:"1", label:"Access to Destinus Network", score:4, triggers:[{domain:"Cyber / InfoSec"},{domain:"Network & Communications Security"},{domain:"Identity & Access Management"}]},
+        {value:"2", label:"Access to Destinus Systems", score:3, triggers:[{domain:"Cyber / InfoSec"},{domain:"Identity & Access Management"}]},
+        {value:"3", label:"Access to system hosting Data on behalf of Destinus (e.g. Cloud platform, SaaS)", score:3, triggers:[{domain:"Cyber / InfoSec"},{domain:"Identity & Access Management"},{domain:"Cloud Security"}]},
+        {value:"4", label:"Access to Destinus Data only", score:2, triggers:[{domain:"Cyber / InfoSec"}]},
+        {value:"5", label:"Not Applicable", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.02", riskArea:"Cyber", config:"Conditional", responseType:"single",
+      text:"Will Destinus Data be sent outside of its Physical Environment, Systems, Network?",
+      guidance:"Ascertains the logical/geographical boundaries within which Destinus data is stored, processed and transmitted. 'Physical Environment, Systems, Network' includes Destinus's owned cloud environment.",
+      triggerSummary:"Asked only if CYB.01 ≠ 'Not Applicable'.\n• Yes / Unsure → Data Privacy (incl. DP.08 transfer safeguards) + Threat & Incident Management (TIM.09 DB activity monitoring)\n• Combined with CYB.03 = Yes → AI.05 DPIA (see rules)\n• No → Data Privacy may still apply if CYB.01 is Options 1–3 (see rules)",
+      showIf:[{q:"CYB.01", op:"notin", vals:["5"]}],
+      options:[
+        {value:"Yes", label:"Yes", score:3, triggers:[{domain:"Data Privacy", note:"DP.08 — international transfer safeguards"},{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Data Privacy", note:"DP.08 — international transfer safeguards"},{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]}
+      ]
+    },
+    {
+      id:"CYB.03", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Will your organisation use any form of AI (including any AI models or AI systems) in connection with this engagement with Destinus?",
+      guidance:"Identifies AI-specific risks (bias, data privacy, security vulnerabilities), regulatory/ethical compliance, transparency of the AI's role, and contractual obligations for data governance.",
+      triggerSummary:"• Yes → Artificial Intelligence domain\n• Yes + CYB.02 = Yes/Unsure → AI.05 DPIA for AI processing PII (see rules)\n• No → AI domain not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"Artificial Intelligence"}]},
+        {value:"No", label:"No", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.04", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Will the delivery of services to Destinus involve the use of any critical sub-processors, sub-contractors, or other third parties ('Fourth Parties')?",
+      guidance:"Applies where the supplier engages other third parties (Destinus fourth parties) that handle/process/store Destinus data, or manage IT infrastructure used to provide services to Destinus.",
+      triggerSummary:"• Yes → Fourth Parties domain (FP.01–FP.06) + Data Privacy DP.09 (sub-processing agreements)\n• No → Fourth Parties not deployed; DP.09 not asked",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"Fourth Parties"},{domain:"Data Privacy", note:"DP.09 — sub-processing agreements (GDPR Art.28)"}]},
+        {value:"No", label:"No", score:0, triggers:[]}
+      ]
+    },
+    {
+      id:"CYB.05", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Who manages the IT infrastructure / devices used for delivery of the service?",
+      guidance:"1) Destinus — Destinus's internal IT manages all aspects (OS, apps, security software, configuration, patching), including Destinus's own cloud environment (unless the TP is Destinus's CSP).\n2) Third-Party — the supplier/vendor performs management, maintenance, security and updates (even if they use a cloud provider).",
+      triggerSummary:"• Destinus → no additional focus areas\n• Third-Party / Unsure → Network & Communications Security, Identity & Access Management, System Management, Threat & Incident Management, Information Management, Physical & Environmental Security\nCloud Security is triggered separately via CYB.01 = Option 3, not here.",
+      showIf:[],
+      options:[
+        {value:"Destinus", label:"Destinus", score:0, triggers:[]},
+        {value:"Third-Party", label:"Third-Party", score:3, triggers:[{domain:"Network & Communications Security"},{domain:"Identity & Access Management"},{domain:"System Management"},{domain:"Threat & Incident Management"},{domain:"Information Management"},{domain:"Physical & Environmental Security"}]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Network & Communications Security"},{domain:"Identity & Access Management"},{domain:"System Management"},{domain:"Threat & Incident Management"},{domain:"Information Management"},{domain:"Physical & Environmental Security"}]}
+      ]
+    },
+    {
+      id:"CYB.06", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Does the Third party provide software development services or use its own software or web applications for the provision of engaged services to Destinus?",
+      guidance:"Focuses on whether the TP creates bespoke software, customisations or enhancements specifically for Destinus.",
+      triggerSummary:"• Yes / Unsure → System Development domain (SYSD.01–SYSD.07). SYSD.07 (open-source controls) is conditional on OSS use.\n• No → System Development not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:2, triggers:[{domain:"System Development"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:1, triggers:[{domain:"System Development"}]}
+      ]
+    },
+    {
+      id:"CYB.07", riskArea:"Cyber", config:"Always", responseType:"single",
+      text:"Does the Third party host externally facing systems as part of the service?",
+      guidance:"A system is externally facing if it can be accessed from outside the supplier's (or Destinus's) internal network, typically via the public internet.\nYes — any part (app, DB, server, network device, API) is directly accessible from the public internet.\nNo — entirely hosted within the TP's private network, accessible only via a secure dedicated connection.",
+      triggerSummary:"• Yes / Unsure → Network & Communications Security (incl. NCS.07 WAF & NCS.08 DMZ), Information Management, Threat & Incident Management, Identity & Access Management\n• Combined with CYB.02 = Yes/Unsure → TIM.09 database activity monitoring (see rules)\n• No → WAF/DMZ not deployed",
+      showIf:[],
+      options:[
+        {value:"Yes", label:"Yes", score:3, triggers:[{domain:"Network & Communications Security", note:"NCS.07 WAF & NCS.08 DMZ — internet-facing controls"},{domain:"Information Management"},{domain:"Threat & Incident Management"},{domain:"Identity & Access Management"}]},
+        {value:"No", label:"No", score:0, triggers:[]},
+        {value:"Unsure", label:"Unsure", score:2, triggers:[{domain:"Network & Communications Security", note:"NCS.07 WAF & NCS.08 DMZ — internet-facing controls"},{domain:"Information Management"},{domain:"Threat & Incident Management"},{domain:"Identity & Access Management"}]}
+      ]
+    }
+  ],
+  // Cross-question rules (multi-condition)
+  rules:[
+    {label:"Cyber in scope → auto Security Governance & People Management", when:[{q:"CYB.01", op:"in", vals:["1","2","3","4"]}], then:[{domain:"Security Governance", note:"Auto-triggered (Cyber in scope)"},{domain:"People Management", note:"Auto-triggered (Cyber in scope)"}]},
+    {label:"Data-only access + data egress → Identity & Access Management", when:[{q:"CYB.01", op:"in", vals:["4"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Identity & Access Management"}]},
+    {label:"TP processes data (access 1–3) without egress → Data Privacy", when:[{q:"CYB.01", op:"in", vals:["1","2","3"]},{q:"CYB.02", op:"in", vals:["No"]}], then:[{domain:"Data Privacy", note:"TP processes Destinus data"}]},
+    {label:"AI + data egress → AI DPIA", when:[{q:"CYB.03", op:"in", vals:["Yes"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Artificial Intelligence", note:"AI.05 — DPIA for AI processing PII"}]},
+    {label:"Internet-facing + data egress → DB activity monitoring", when:[{q:"CYB.07", op:"in", vals:["Yes","Unsure"]},{q:"CYB.02", op:"in", vals:["Yes","Unsure"]}], then:[{domain:"Threat & Incident Management", note:"TIM.09 — database activity monitoring"}]}
+  ],
+  bands:[
+    {label:"Minimal", min:0, max:0, color:"#0891b2"},
+    {label:"Low", min:1, max:5, color:"#16a34a"},
+    {label:"Medium", min:6, max:10, color:"#d97706"},
+    {label:"High", min:11, max:14, color:"#ea580c"},
+    {label:"Critical", min:15, max:9999, color:"#dc2626"}
+  ]
+};
+
+/* ============================================================
+   STATE & PERSISTENCE
+   ============================================================ */
+const LS_SCHEMA="ira_schema_v1", LS_RECORDS="ira_records_v1";
+let SCHEMA = loadSchema();
+let answers = {};        // {qid: value}
+let currentRecordId = null;
+
+function loadSchema(){
+  try{ const s=localStorage.getItem(LS_SCHEMA); if(s) return migrate(JSON.parse(s)); }catch(e){}
+  return clone(DEFAULT_SCHEMA);
+}
+function migrate(s){ // be tolerant of partial schemas
+  s.meta=s.meta||{}; s.domains=s.domains||[]; s.questions=s.questions||[]; s.rules=s.rules||[]; s.bands=s.bands||clone(DEFAULT_SCHEMA.bands);
+  return s;
+}
+function saveSchema(){ localStorage.setItem(LS_SCHEMA, JSON.stringify(SCHEMA)); }
+function loadRecords(){ try{return JSON.parse(localStorage.getItem(LS_RECORDS)||"[]")}catch(e){return[]} }
+function saveRecords(r){ localStorage.setItem(LS_RECORDS, JSON.stringify(r)); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function el(id){ return document.getElementById(id); }
+
+/* ============================================================
+   ENGINE — visibility, triggers, score, rating
+   ============================================================ */
+function matchCond(c, ans){
+  const a = ans[c.q];
+  if(a===undefined||a===null||a==="") return false; // require an actual answer
+  const vals = c.vals||[];
+  switch(c.op){
+    case "in": return vals.includes(a);
+    case "notin": return !vals.includes(a);
+    case "eq": return a===vals[0];
+    case "neq": return a!==vals[0];
+    default: return false;
+  }
+}
+function isVisible(q, ans){
+  if(!q.showIf || !q.showIf.length) return true;
+  return q.showIf.every(c=>matchCond(c, ans));
+}
+function findOption(q, val){ return (q.options||[]).find(o=>o.value===val); }
+
+function computeResults(){
+  const ans = answers;
+  const domMap = {}; // name -> {notes:Set, sources:[], auto:bool}
+  function addDom(name, note, src){
+    if(!name) return;
+    if(!domMap[name]) domMap[name]={notes:new Set(), sources:[]};
+    if(note) domMap[name].notes.add(note);
+    if(src) domMap[name].sources.push(src);
+  }
+  let score=0, answered=0, visibleCount=0;
+  const visibleQs = (SCHEMA.questions||[]).filter(q=>isVisible(q,ans));
+  visibleCount = visibleQs.length;
+  visibleQs.forEach(q=>{
+    const val = ans[q.id];
+    if(val===undefined||val==="") return;
+    answered++;
+    const opt = findOption(q,val);
+    if(!opt) return;
+    score += (Number(opt.score)||0) * (Number(q.weight)||1);
+    (opt.triggers||[]).forEach(t=> addDom(t.domain, t.note, {q:q.id, val:opt.label}));
+  });
+  // cross-question rules
+  (SCHEMA.rules||[]).forEach(r=>{
+    if((r.when||[]).length && r.when.every(c=>matchCond(c,ans))){
+      (r.then||[]).forEach(t=> addDom(t.domain, t.note, {q:"rule", val:r.label}));
+    }
+  });
+  // mark auto domains
+  const autoNames = new Set((SCHEMA.domains||[]).filter(d=>d.auto).map(d=>d.name));
+  const maxScore = (SCHEMA.questions||[]).reduce((s,q)=> s + Math.max(0,...(q.options||[]).map(o=>Number(o.score)||0))*(Number(q.weight)||1), 0);
+  const band = bandFor(score);
+  const inScopeCyber = ans["CYB.01"]!==undefined && ans["CYB.01"]!=="" && ans["CYB.01"]!=="5";
+  // order domains by schema order
+  const order = (SCHEMA.domains||[]).map(d=>d.name);
+  const domains = Object.keys(domMap).sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  }).map(name=>({
+    name, notes:[...domMap[name].notes], sources:domMap[name].sources, auto:autoNames.has(name)
+  }));
+  return {score, maxScore, band, answered, visibleCount, domains, inScopeCyber};
+}
+function bandFor(score){
+  const bands = SCHEMA.bands||[];
+  for(const b of bands){ if(score>=Number(b.min) && score<=Number(b.max)) return b; }
+  return bands.length? bands[bands.length-1] : {label:"—", color:"#64748b"};
+}
+
+/* ============================================================
+   ASSESS VIEW RENDERING
+   ============================================================ */
+function renderAssess(){
+  el("assessIntro").textContent = (SCHEMA.meta.title||"") + (SCHEMA.meta.org? " · "+SCHEMA.meta.org:"") + " · v"+(SCHEMA.meta.version||"");
+  el("qTitle").textContent = SCHEMA.meta.title||"Questionnaire";
+  const wrap = el("questions"); wrap.innerHTML="";
+  const ans = answers;
+  (SCHEMA.questions||[]).forEach(q=>{
+    if(!isVisible(q,ans)) return;
+    const answeredCls = (ans[q.id]!==undefined && ans[q.id]!=="")? " answered":"";
+    const div=document.createElement("div");
+    div.className="q"+answeredCls;
+    let opts="";
+    (q.options||[]).forEach(o=>{
+      const sel = ans[q.id]===o.value? " sel":"";
+      opts+=`<label class="opt${sel}">
+        <input type="radio" name="q_${esc(q.id)}" value="${esc(o.value)}" ${sel?"checked":""}/>
+        <span class="ol">${esc(o.label)}</span>
+      </label>`;
+    });
+    div.innerHTML=`
+      <div class="qhead">
+        <span class="qid">${esc(q.id)}</span>
+        <div style="flex:1">
+          <div class="qtext">${esc(q.text)}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span class="badge ${q.config==="Conditional"?"cond":""}">${esc(q.config||"Always")}</span>
+            <span class="badge">${esc(q.riskArea||"")}</span>
+            ${q.guidance?`<span class="linklike" data-guide="${esc(q.id)}">Guidance</span>`:""}
+            ${q.triggerSummary?`<span class="linklike" data-trig="${esc(q.id)}">Trigger logic</span>`:""}
+          </div>
+        </div>
+      </div>
+      <div class="opts">${opts}</div>
+      ${q.guidance?`<div class="guide" id="guide_${esc(q.id)}">${esc(q.guidance)}</div>`:""}
+      ${q.triggerSummary?`<div class="trigsum" id="trig_${esc(q.id)}">${esc(q.triggerSummary)}</div>`:""}
+    `;
+    wrap.appendChild(div);
+  });
+  // wire radios
+  wrap.querySelectorAll("input[type=radio]").forEach(r=>{
+    r.addEventListener("change", e=>{
+      const qid = e.target.name.slice(2);
+      answers[qid]=e.target.value;
+      cleanupHidden();
+      renderAssess(); renderResult();
+    });
+  });
+  wrap.querySelectorAll("[data-guide]").forEach(b=> b.addEventListener("click",()=> el("guide_"+b.dataset.guide).classList.toggle("show")));
+  wrap.querySelectorAll("[data-trig]").forEach(b=> b.addEventListener("click",()=> el("trig_"+b.dataset.trig).classList.toggle("show")));
+  const total=(SCHEMA.questions||[]).filter(q=>isVisible(q,ans)).length;
+  const done=(SCHEMA.questions||[]).filter(q=>isVisible(q,ans) && ans[q.id]!==undefined && ans[q.id]!=="").length;
+  el("qProgress").textContent = done+" / "+total+" answered";
+}
+function cleanupHidden(){ // drop answers to now-hidden questions so results stay consistent
+  (SCHEMA.questions||[]).forEach(q=>{ if(!isVisible(q,answers)) delete answers[q.id]; });
+}
+function renderResult(){
+  const r = computeResults();
+  const b = r.band;
+  el("ratingWrap").innerHTML = `
+    <div class="ratingbox" style="background:${esc(b.color)}">
+      <div class="lbl">Inherent Risk Rating</div>
+      <div class="val">${esc(b.label)}</div>
+      <div class="score">Score ${r.score} of ${r.maxScore}</div>
+      <div class="meter"><i style="width:${r.maxScore? Math.round(r.score/r.maxScore*100):0}%;background:rgba(255,255,255,.85)"></i></div>
+    </div>`;
+  el("kDomains").textContent = r.domains.length;
+  el("kAnswered").textContent = r.answered;
+  const out = el("domainsOut");
+  if(!r.domains.length){
+    out.innerHTML = `<div class="empty">${r.inScopeCyber? "No domains scoped yet — keep answering.":"Answer questions to see which due-diligence domains are scoped in."}</div>`;
+    return;
+  }
+  out.innerHTML = r.domains.map(d=>{
+    const srcs = d.sources.map(s=> s.q==="rule"? `rule: ${esc(s.val)}` : `${esc(s.q)} = ${esc(s.val)}`);
+    const uniqueSrc=[...new Set(srcs)];
+    return `<div class="domchip">
+      <div style="flex:1">
+        <div class="dn">${esc(d.name)} ${d.auto?'<span class="pill auto">auto</span>':'<span class="pill">scoped</span>'}</div>
+        ${d.notes.length? `<div class="note">${d.notes.map(esc).join("<br>")}</div>`:""}
+        <div class="src">Triggered by: ${uniqueSrc.join("; ")}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   RECORDS
+   ============================================================ */
+function gatherAssessment(){
+  return {
+    id: currentRecordId||uid(),
+    vendor: el("m_vendor").value.trim(),
+    service: el("m_service").value.trim(),
+    owner: el("m_owner").value.trim(),
+    bu: el("m_bu").value.trim(),
+    date: el("m_date").value,
+    schemaVersion: SCHEMA.meta.version,
+    schemaTitle: SCHEMA.meta.title,
+    answers: clone(answers),
+    result: serializeResult(computeResults()),
+    savedAt: new Date().toISOString()
+  };
+}
+function serializeResult(r){
+  return {score:r.score, maxScore:r.maxScore, band:r.band.label, bandColor:r.band.color,
+    domains:r.domains.map(d=>({name:d.name, notes:d.notes, auto:d.auto, sources:[...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))]}))};
+}
+function saveAssessment(){
+  const v = el("m_vendor").value.trim();
+  if(!v){ toast("Enter a vendor name first"); el("m_vendor").focus(); return; }
+  const rec = gatherAssessment();
+  const recs = loadRecords();
+  const i = recs.findIndex(x=>x.id===rec.id);
+  if(i>=0) recs[i]=rec; else recs.push(rec);
+  saveRecords(recs);
+  currentRecordId = rec.id;
+  toast("Assessment saved");
+  renderRecords();
+}
+function renderRecords(){
+  const recs = loadRecords().sort((a,b)=> (b.savedAt||"").localeCompare(a.savedAt||""));
+  const wrap = el("recordsTable");
+  if(!recs.length){ wrap.innerHTML = `<div class="empty" style="margin-top:14px">No saved assessments yet.</div>`; return; }
+  wrap.innerHTML = `<table><thead><tr>
+    <th>Vendor</th><th>Service</th><th>Rating</th><th>Domains</th><th>Owner</th><th>Date</th><th></th>
+  </tr></thead><tbody>${recs.map(r=>{
+    const res=r.result||{};
+    return `<tr>
+      <td><b>${esc(r.vendor||"—")}</b></td>
+      <td>${esc(r.service||"")}</td>
+      <td><span class="tag" style="background:${esc(res.bandColor||"#eee")};color:#fff">${esc(res.band||"—")}</span> <span class="muted">${res.score!=null?res.score:""}</span></td>
+      <td>${(res.domains||[]).length}</td>
+      <td>${esc(r.owner||"")}</td>
+      <td>${esc(r.date||"")}</td>
+      <td style="white-space:nowrap">
+        <button class="btn ghost sm" data-open="${esc(r.id)}">Open</button>
+        <button class="btn gray sm" data-dup="${esc(r.id)}">Duplicate</button>
+        <button class="btn danger sm" data-del="${esc(r.id)}">Delete</button>
+      </td>
+    </tr>`;
+  }).join("")}</tbody></table>`;
+  wrap.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openRecord(b.dataset.open)));
+  wrap.querySelectorAll("[data-dup]").forEach(b=>b.addEventListener("click",()=>dupRecord(b.dataset.dup)));
+  wrap.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>delRecord(b.dataset.del)));
+}
+function openRecord(id){
+  const r = loadRecords().find(x=>x.id===id); if(!r) return;
+  currentRecordId=r.id;
+  el("m_vendor").value=r.vendor||""; el("m_service").value=r.service||"";
+  el("m_owner").value=r.owner||""; el("m_bu").value=r.bu||""; el("m_date").value=r.date||"";
+  answers = clone(r.answers||{});
+  switchView("assess"); renderAssess(); renderResult();
+  toast("Loaded — editing "+(r.vendor||"assessment"));
+}
+function dupRecord(id){
+  const r = loadRecords().find(x=>x.id===id); if(!r) return;
+  const copy = clone(r); copy.id=uid(); copy.vendor=(r.vendor||"")+" (copy)"; copy.savedAt=new Date().toISOString();
+  const recs=loadRecords(); recs.push(copy); saveRecords(recs); renderRecords(); toast("Duplicated");
+}
+function delRecord(id){
+  if(!confirm("Delete this assessment?")) return;
+  saveRecords(loadRecords().filter(x=>x.id!==id));
+  if(currentRecordId===id) currentRecordId=null;
+  renderRecords(); toast("Deleted");
+}
+
+/* ============================================================
+   EXPORTS
+   ============================================================ */
+function download(name, text, type){
+  const blob=new Blob([text], {type:type||"text/plain"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+function csvCell(v){ v=v==null?"":String(v); return /[",\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
+function exportCSV(){
+  const r=computeResults(); const v=el("m_vendor").value.trim()||"assessment";
+  let rows=[["Field","Value"],
+    ["Vendor",el("m_vendor").value],["Service",el("m_service").value],["Service Owner",el("m_owner").value],
+    ["Business Unit",el("m_bu").value],["Date",el("m_date").value],
+    ["Questionnaire",SCHEMA.meta.title],["Version",SCHEMA.meta.version],
+    ["Inherent Risk Rating",r.band.label],["Score",r.score+" / "+r.maxScore],["Domains in scope",r.domains.length],
+    [],["Question ID","Question","Answer"]];
+  (SCHEMA.questions||[]).filter(q=>isVisible(q,answers)).forEach(q=>{
+    const o=findOption(q,answers[q.id]); rows.push([q.id,q.text,o?o.label:""]);
+  });
+  rows.push([],["Domain","Focus / notes","Triggered by"]);
+  r.domains.forEach(d=> rows.push([d.name, d.notes.join(" | "), [...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; ")]));
+  download(`IRA_${v}_${today()}.csv`, rows.map(row=>row.map(csvCell).join(",")).join("\n"), "text/csv");
+}
+function exportChecklist(){
+  const r=computeResults(); const v=el("m_vendor").value.trim()||"assessment";
+  let rows=[["DDQ Scope Checklist for "+(el("m_vendor").value||"")],["Rating: "+r.band.label+" ("+r.score+"/"+r.maxScore+")"],[],
+    ["#","DDQ Domain / Focus Area","Auto?","Focus controls / notes","Triggered by","Send to vendor? (Y/N)","Status"]];
+  r.domains.forEach((d,i)=> rows.push([i+1, d.name, d.auto?"Auto":"", d.notes.join(" | "), [...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; "), "", ""]));
+  download(`DDQ_Checklist_${v}_${today()}.csv`, rows.map(row=>row.map(csvCell).join(",")).join("\n"), "text/csv");
+}
+function exportJSON(){
+  const rec=gatherAssessment(); const v=rec.vendor||"assessment";
+  download(`IRA_${v}_${today()}.json`, JSON.stringify(rec,null,2), "application/json");
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+
+/* ---- PDF report ---- */
+function buildReport(){
+  const r=computeResults();
+  const m=SCHEMA.meta;
+  const qrows=(SCHEMA.questions||[]).filter(q=>isVisible(q,answers)).map(q=>{
+    const o=findOption(q,answers[q.id]);
+    return `<tr><td><b>${esc(q.id)}</b></td><td>${esc(q.text)}</td><td>${esc(o?o.label:"—")}</td></tr>`;
+  }).join("");
+  const drows=r.domains.map((d,i)=>`<tr><td>${i+1}</td><td><b>${esc(d.name)}</b>${d.auto?' <span class="tag" style="background:#eff6ff;color:#1d4ed8">auto</span>':''}</td><td>${esc(d.notes.join("; "))}</td><td>${esc([...new Set(d.sources.map(s=>s.q==="rule"?("rule: "+s.val):(s.q+" = "+s.val)))].join("; "))}</td></tr>`).join("");
+  el("report").innerHTML=`
+    <div class="rep-h">
+      <div><div style="font-size:20px;font-weight:800;color:#4338ca">${esc(m.org||"")} — Inherent Risk Assessment</div>
+      <div style="color:#64748b">${esc(m.title||"")} · v${esc(m.version||"")}</div></div>
+      <div style="text-align:right;font-size:12px;color:#64748b">Generated ${esc(new Date().toLocaleString())}</div>
+    </div>
+    <div class="rep-section">
+      <table>
+        <tr><td style="width:160px"><b>Vendor</b></td><td>${esc(el("m_vendor").value||"—")}</td><td style="width:160px"><b>Service Owner</b></td><td>${esc(el("m_owner").value||"—")}</td></tr>
+        <tr><td><b>Service</b></td><td>${esc(el("m_service").value||"—")}</td><td><b>Business unit</b></td><td>${esc(el("m_bu").value||"—")}</td></tr>
+        <tr><td><b>Assessment date</b></td><td>${esc(el("m_date").value||"—")}</td><td><b>Answered by</b></td><td>${esc(m.answeredBy||"—")}</td></tr>
+      </table>
+    </div>
+    <div class="rep-section" style="display:flex;gap:16px;align-items:center">
+      <div style="background:${esc(r.band.color)};color:#fff;border-radius:12px;padding:14px 22px;text-align:center">
+        <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Inherent Risk</div>
+        <div style="font-size:26px;font-weight:800">${esc(r.band.label)}</div>
+        <div style="font-size:12px">Score ${r.score} / ${r.maxScore}</div>
+      </div>
+      <div style="color:#475569"><b>${r.domains.length}</b> DDQ domain(s) scoped in for due diligence. This rating reflects the inherent risk of the engagement before mitigating controls are assessed.</div>
+    </div>
+    <div class="rep-section">
+      <h3 style="color:#4338ca">IRQ responses</h3>
+      <table><thead><tr><th>ID</th><th>Question</th><th>Response</th></tr></thead><tbody>${qrows}</tbody></table>
+    </div>
+    <div class="rep-section">
+      <h3 style="color:#4338ca">Due-diligence scope (DDQ checklist)</h3>
+      <table><thead><tr><th>#</th><th>Domain / focus area</th><th>Focus controls / notes</th><th>Triggered by</th></tr></thead><tbody>${drows||'<tr><td colspan=4 style="color:#64748b">None triggered.</td></tr>'}</tbody></table>
+    </div>
+    <div class="rep-section" style="font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px">
+      ${esc(m.org||"")} TPRM · Inherent Risk Assessment · ${esc(m.title||"")} v${esc(m.version||"")} · This document was generated from the IRA app.
+    </div>`;
+  const prevTitle=document.title;
+  document.title=`IRA_${el("m_vendor").value||"assessment"}_${today()}`;
+  window.print();
+  setTimeout(()=>document.title=prevTitle, 800);
+}
+
+/* ============================================================
+   BUILDER
+   ============================================================ */
+function renderBuilder(){
+  el("b_title").value=SCHEMA.meta.title||""; el("b_org").value=SCHEMA.meta.org||"";
+  el("b_version").value=SCHEMA.meta.version||""; el("b_answeredBy").value=SCHEMA.meta.answeredBy||"";
+  el("b_updated").value=SCHEMA.meta.updated||"";
+  // questions
+  const bq=el("builderQuestions");
+  bq.innerHTML=(SCHEMA.questions||[]).map((q,i)=>`
+    <div class="sub-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div style="flex:1">
+          <div><span class="qid">${esc(q.id)}</span> <span class="badge ${q.config==="Conditional"?"cond":""}">${esc(q.config||"Always")}</span> <span class="muted">${(q.options||[]).length} options</span></div>
+          <div style="margin-top:6px;font-weight:600">${esc(q.text)}</div>
+          <div class="muted" style="font-size:12px;margin-top:4px">${(q.options||[]).map(o=>esc(o.label)+" ("+(o.score||0)+")").join(" · ")}</div>
+        </div>
+        <div style="white-space:nowrap;display:flex;flex-direction:column;gap:6px">
+          <button class="btn ghost sm" data-eq="${i}">Edit</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn gray sm" data-up="${i}">↑</button>
+            <button class="btn gray sm" data-down="${i}">↓</button>
+          </div>
+          <button class="btn danger sm" data-dq="${i}">Delete</button>
+        </div>
+      </div>
+    </div>`).join("") || `<div class="empty">No questions.</div>`;
+  bq.querySelectorAll("[data-eq]").forEach(b=>b.addEventListener("click",()=>editQuestion(+b.dataset.eq)));
+  bq.querySelectorAll("[data-dq]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete "+SCHEMA.questions[+b.dataset.dq].id+"?")){SCHEMA.questions.splice(+b.dataset.dq,1); saveSchema(); renderBuilder(); refreshAssess();}}));
+  bq.querySelectorAll("[data-up]").forEach(b=>b.addEventListener("click",()=>moveQ(+b.dataset.up,-1)));
+  bq.querySelectorAll("[data-down]").forEach(b=>b.addEventListener("click",()=>moveQ(+b.dataset.down,1)));
+  // rules
+  const br=el("builderRules");
+  br.innerHTML=(SCHEMA.rules||[]).map((r,i)=>`
+    <div class="sub-card">
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <div style="flex:1">
+          <b>${esc(r.label||"Rule "+(i+1))}</b>
+          <div class="muted" style="font-size:12px;margin-top:4px">IF ${ (r.when||[]).map(c=>esc(c.q)+" "+esc(c.op)+" ["+(c.vals||[]).map(esc).join(", ")+"]").join(" AND ") }</div>
+          <div class="muted" style="font-size:12px">THEN ${ (r.then||[]).map(t=>esc(t.domain)+(t.note?(" ("+esc(t.note)+")"):"")).join(", ") }</div>
+        </div>
+        <div style="white-space:nowrap"><button class="btn ghost sm" data-er="${i}">Edit</button> <button class="btn danger sm" data-dr="${i}">Delete</button></div>
+      </div>
+    </div>`).join("") || `<div class="empty">No rules.</div>`;
+  br.querySelectorAll("[data-er]").forEach(b=>b.addEventListener("click",()=>editRule(+b.dataset.er)));
+  br.querySelectorAll("[data-dr]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Delete rule?")){SCHEMA.rules.splice(+b.dataset.dr,1); saveSchema(); renderBuilder(); refreshAssess();}}));
+  // domains
+  const bd=el("builderDomains");
+  bd.innerHTML=`<table><thead><tr><th>Domain</th><th>Description</th><th>Auto</th><th></th></tr></thead><tbody>${
+    (SCHEMA.domains||[]).map((d,i)=>`<tr>
+      <td><b>${esc(d.name)}</b></td><td class="muted">${esc(d.desc||"")}</td>
+      <td><input type="checkbox" data-dauto="${i}" ${d.auto?"checked":""}/></td>
+      <td><button class="btn danger sm" data-dd="${i}">Remove</button></td></tr>`).join("")
+  }</tbody></table>`;
+  bd.querySelectorAll("[data-dauto]").forEach(c=>c.addEventListener("change",()=>{SCHEMA.domains[+c.dataset.dauto].auto=c.checked; saveSchema(); refreshAssess();}));
+  bd.querySelectorAll("[data-dd]").forEach(b=>b.addEventListener("click",()=>{ if(confirm("Remove domain?")){SCHEMA.domains.splice(+b.dataset.dd,1); saveSchema(); renderBuilder();}}));
+  // bands
+  const bb=el("builderBands");
+  bb.innerHTML=`<table><thead><tr><th>Label</th><th>Min</th><th>Max</th><th>Colour</th><th></th></tr></thead><tbody>${
+    (SCHEMA.bands||[]).map((b,i)=>`<tr>
+      <td><input type="text" data-bl="${i}" value="${esc(b.label)}"/></td>
+      <td><input type="number" data-bmin="${i}" value="${esc(b.min)}" style="width:80px"/></td>
+      <td><input type="number" data-bmax="${i}" value="${esc(b.max)}" style="width:80px"/></td>
+      <td><input type="color" data-bc="${i}" value="${esc(b.color||"#888888")}"/></td>
+      <td><button class="btn danger sm" data-bdel="${i}">Remove</button></td></tr>`).join("")
+  }</tbody></table>`;
+  bb.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{
+    const i=+(inp.dataset.bl||inp.dataset.bmin||inp.dataset.bmax||inp.dataset.bc);
+    const b=SCHEMA.bands[i];
+    if(inp.dataset.bl!=null)b.label=inp.value;
+    if(inp.dataset.bmin!=null)b.min=Number(inp.value);
+    if(inp.dataset.bmax!=null)b.max=Number(inp.value);
+    if(inp.dataset.bc!=null)b.color=inp.value;
+    saveSchema(); refreshAssess();
+  }));
+  bb.querySelectorAll("[data-bdel]").forEach(b=>b.addEventListener("click",()=>{SCHEMA.bands.splice(+b.dataset.bdel,1);saveSchema();renderBuilder();refreshAssess();}));
+}
+function moveQ(i,dir){ const j=i+dir; if(j<0||j>=SCHEMA.questions.length)return; const a=SCHEMA.questions; [a[i],a[j]]=[a[j],a[i]]; saveSchema(); renderBuilder(); refreshAssess(); }
+function refreshAssess(){ if(!el("view-assess").classList.contains("hide")){ cleanupHidden(); renderAssess(); renderResult(); } }
+
+/* ---- Question editor modal ---- */
+let editQIndex=-1;
+function editQuestion(i){
+  editQIndex=i;
+  const q = i<0? {id:"",riskArea:"",config:"Always",responseType:"single",text:"",guidance:"",triggerSummary:"",showIf:[],options:[{value:"",label:"",score:0,triggers:[]}],weight:1} : clone(SCHEMA.questions[i]);
+  const domOpts = (SCHEMA.domains||[]).map(d=>d.name);
+  function optRow(o,idx){
+    const chk = domOpts.map(dn=>{
+      const on=(o.triggers||[]).some(t=>t.domain===dn);
+      return `<label class="${on?'on':''}"><input type="checkbox" data-otrig="${idx}" value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;
+    }).join("");
+    const note=(o.triggers||[]).map(t=>t.note).filter(Boolean).join(" | ");
+    return `<div class="sub-card" data-optblock="${idx}">
+      <div class="opt-edit">
+        <input type="text" data-oval="${idx}" placeholder="value" value="${esc(o.value)}"/>
+        <input type="text" data-olab="${idx}" placeholder="label shown to user" value="${esc(o.label)}"/>
+        <input type="number" data-osc="${idx}" placeholder="score" value="${esc(o.score||0)}"/>
+      </div>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 2px">Triggers domains:</div>
+      <div class="checks">${chk}</div>
+      <input type="text" data-onote="${idx}" placeholder="focus note (optional, e.g. DP.08 transfer safeguards)" value="${esc(note)}" style="margin-top:6px"/>
+      <div style="text-align:right;margin-top:6px"><button class="btn danger sm" data-odel="${idx}">Remove option</button></div>
+    </div>`;
+  }
+  function condRows(){
+    return (q.showIf||[]).map((c,idx)=>`
+      <div class="cond-row">
+        <select data-scq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+        <select data-scop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+        <input type="text" data-scv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values, comma-sep"/>
+        <button class="btn danger sm" data-scdel="${idx}">✕</button>
+      </div>`).join("");
+  }
+  openModal(i<0?"Add question":"Edit "+q.id, `
+    <div class="row">
+      <label class="field"><span>Question ID</span><input type="text" id="eq_id" value="${esc(q.id)}"/></label>
+      <label class="field"><span>Risk area</span><input type="text" id="eq_area" value="${esc(q.riskArea||"")}"/></label>
+      <label class="field"><span>Configuration</span><select id="eq_config"><option ${q.config==="Always"?"selected":""}>Always</option><option ${q.config==="Conditional"?"selected":""}>Conditional</option></select></label>
+    </div>
+    <label class="field"><span>Question text</span><textarea id="eq_text">${esc(q.text)}</textarea></label>
+    <label class="field"><span>User guidance</span><textarea id="eq_guide">${esc(q.guidance||"")}</textarea></label>
+    <label class="field"><span>Trigger logic summary (shown to assessor)</span><textarea id="eq_trig">${esc(q.triggerSummary||"")}</textarea></label>
+    <label class="field"><span>Score weight (multiplier)</span><input type="number" id="eq_weight" value="${esc(q.weight||1)}" style="max-width:120px"/></label>
+
+    <h3>Display condition (only show this question if…)</h3>
+    <div id="eq_conds">${condRows()}</div>
+    <button class="btn gray sm" id="eq_addcond">+ Add condition</button>
+
+    <h3 style="margin-top:16px">Options &amp; per-option triggers</h3>
+    <div id="eq_opts">${(q.options||[]).map(optRow).join("")}</div>
+    <button class="btn gray sm" id="eq_addopt">+ Add option</button>
+  `, [
+    {label:"Cancel", cls:"gray", fn:closeModal},
+    {label:(i<0?"Add question":"Save question"), cls:"", fn:()=>saveQuestionFromModal()}
+  ]);
+  // local working copy in modal dataset
+  modalState = q;
+  wireQuestionModal();
+}
+let modalState=null;
+function wireQuestionModal(){
+  el("eq_addopt").addEventListener("click",()=>{ modalState.options=collectOptions(); modalState.options.push({value:"",label:"",score:0,triggers:[]}); reopenQuestionOpts(); });
+  el("eq_addcond").addEventListener("click",()=>{ modalState.showIf=collectConds(); modalState.showIf.push({q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}); reopenQuestionConds(); });
+  bindOptHandlers(); bindCondHandlers();
+}
+function bindOptHandlers(){
+  el("eq_opts").querySelectorAll("[data-odel]").forEach(b=>b.addEventListener("click",()=>{ modalState.options=collectOptions(); modalState.options.splice(+b.dataset.odel,1); reopenQuestionOpts(); }));
+  el("eq_opts").querySelectorAll(".checks input").forEach(c=>c.addEventListener("change",e=>{ e.target.closest("label").classList.toggle("on",e.target.checked); }));
+}
+function bindCondHandlers(){
+  el("eq_conds").querySelectorAll("[data-scdel]").forEach(b=>b.addEventListener("click",()=>{ modalState.showIf=collectConds(); modalState.showIf.splice(+b.dataset.scdel,1); reopenQuestionConds(); }));
+}
+function reopenQuestionOpts(){
+  const domOpts=(SCHEMA.domains||[]).map(d=>d.name);
+  el("eq_opts").innerHTML=modalState.options.map((o,idx)=>{
+    const chk=domOpts.map(dn=>{const on=(o.triggers||[]).some(t=>t.domain===dn);return `<label class="${on?'on':''}"><input type="checkbox" data-otrig="${idx}" value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;}).join("");
+    const note=(o.triggers||[]).map(t=>t.note).filter(Boolean).join(" | ");
+    return `<div class="sub-card"><div class="opt-edit">
+      <input type="text" data-oval="${idx}" placeholder="value" value="${esc(o.value)}"/>
+      <input type="text" data-olab="${idx}" placeholder="label" value="${esc(o.label)}"/>
+      <input type="number" data-osc="${idx}" placeholder="score" value="${esc(o.score||0)}"/></div>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 2px">Triggers domains:</div>
+      <div class="checks">${chk}</div>
+      <input type="text" data-onote="${idx}" placeholder="focus note (optional)" value="${esc(note)}" style="margin-top:6px"/>
+      <div style="text-align:right;margin-top:6px"><button class="btn danger sm" data-odel="${idx}">Remove option</button></div></div>`;
+  }).join("");
+  bindOptHandlers();
+}
+function reopenQuestionConds(){
+  el("eq_conds").innerHTML=(modalState.showIf||[]).map((c,idx)=>`
+    <div class="cond-row">
+      <select data-scq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+      <select data-scop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+      <input type="text" data-scv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values"/>
+      <button class="btn danger sm" data-scdel="${idx}">✕</button>
+    </div>`).join("");
+  bindCondHandlers();
+}
+function collectOptions(){
+  const blocks=el("eq_opts").children; const out=[];
+  for(let idx=0;idx<blocks.length;idx++){
+    const root=blocks[idx];
+    const val=root.querySelector(`[data-oval="${idx}"]`).value.trim();
+    const lab=root.querySelector(`[data-olab="${idx}"]`).value.trim();
+    const sc=Number(root.querySelector(`[data-osc="${idx}"]`).value)||0;
+    const note=root.querySelector(`[data-onote="${idx}"]`).value.trim();
+    const doms=[...root.querySelectorAll('.checks input:checked')].map(c=>c.value);
+    const triggers=doms.map((d,k)=>({domain:d, note: (k===0&&note)? note : undefined}));
+    // attach note to first triggered domain only; if no domain but note exists, ignore
+    out.push({value:val,label:lab,score:sc,triggers:triggers.map(t=>t.note?{domain:t.domain,note:t.note}:{domain:t.domain})});
+  }
+  return out;
+}
+function collectConds(){
+  const rows=el("eq_conds").children; const out=[];
+  for(let idx=0;idx<rows.length;idx++){
+    const root=rows[idx];
+    out.push({
+      q:root.querySelector(`[data-scq="${idx}"]`).value,
+      op:root.querySelector(`[data-scop="${idx}"]`).value,
+      vals:root.querySelector(`[data-scv="${idx}"]`).value.split(",").map(s=>s.trim()).filter(Boolean)
+    });
+  }
+  return out;
+}
+function saveQuestionFromModal(){
+  const q=modalState;
+  q.id=el("eq_id").value.trim(); q.riskArea=el("eq_area").value.trim();
+  q.config=el("eq_config").value; q.responseType="single";
+  q.text=el("eq_text").value.trim(); q.guidance=el("eq_guide").value.trim();
+  q.triggerSummary=el("eq_trig").value.trim(); q.weight=Number(el("eq_weight").value)||1;
+  q.showIf=collectConds(); q.options=collectOptions();
+  if(!q.id){ toast("Question ID required"); return; }
+  if(editQIndex<0) SCHEMA.questions.push(q); else SCHEMA.questions[editQIndex]=q;
+  saveSchema(); closeModal(); renderBuilder(); refreshAssess(); toast("Question saved");
+}
+
+/* ---- Rule editor ---- */
+let editRIndex=-1;
+function editRule(i){
+  editRIndex=i;
+  const r = i<0? {label:"",when:[{q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}],then:[]} : clone(SCHEMA.rules[i]);
+  modalState=r;
+  const domOpts=(SCHEMA.domains||[]).map(d=>d.name);
+  const thenChk=domOpts.map(dn=>{const on=(r.then||[]).some(t=>t.domain===dn);return `<label class="${on?'on':''}"><input type="checkbox" data-rthen value="${esc(dn)}" ${on?'checked':''}/>${esc(dn)}</label>`;}).join("");
+  openModal(i<0?"Add rule":"Edit rule", `
+    <label class="field"><span>Rule label</span><input type="text" id="er_label" value="${esc(r.label||"")}" placeholder="Plain-English description"/></label>
+    <h3>Conditions (ALL must match)</h3>
+    <div id="er_conds"></div>
+    <button class="btn gray sm" id="er_addcond">+ Add condition</button>
+    <h3 style="margin-top:14px">Then trigger domains</h3>
+    <div class="checks" id="er_then">${thenChk}</div>
+    <label class="field" style="margin-top:8px"><span>Focus note (optional, applied to first domain)</span><input type="text" id="er_note" value="${esc((r.then&&r.then[0]&&r.then[0].note)||"")}"/></label>
+  `,[
+    {label:"Cancel",cls:"gray",fn:closeModal},
+    {label:(i<0?"Add rule":"Save rule"),cls:"",fn:saveRuleFromModal}
+  ]);
+  renderRuleConds();
+  el("er_addcond").addEventListener("click",()=>{ modalState.when=collectRuleConds(); modalState.when.push({q:(SCHEMA.questions[0]||{}).id||"",op:"in",vals:[]}); renderRuleConds(); });
+  el("er_then").querySelectorAll("input").forEach(c=>c.addEventListener("change",e=>e.target.closest("label").classList.toggle("on",e.target.checked)));
+}
+function renderRuleConds(){
+  el("er_conds").innerHTML=(modalState.when||[]).map((c,idx)=>`
+    <div class="cond-row">
+      <select data-rcq="${idx}">${(SCHEMA.questions||[]).map(qq=>`<option value="${esc(qq.id)}" ${qq.id===c.q?'selected':''}>${esc(qq.id)}</option>`).join("")}</select>
+      <select data-rcop="${idx}">${["in","notin","eq","neq"].map(op=>`<option ${op===c.op?'selected':''}>${op}</option>`).join("")}</select>
+      <input type="text" data-rcv="${idx}" value="${esc((c.vals||[]).join(", "))}" placeholder="values"/>
+      <button class="btn danger sm" data-rcdel="${idx}">✕</button>
+    </div>`).join("");
+  el("er_conds").querySelectorAll("[data-rcdel]").forEach(b=>b.addEventListener("click",()=>{ modalState.when=collectRuleConds(); modalState.when.splice(+b.dataset.rcdel,1); renderRuleConds(); }));
+}
+function collectRuleConds(){
+  const rows=el("er_conds").children; const out=[];
+  for(let idx=0;idx<rows.length;idx++){const root=rows[idx];
+    out.push({q:root.querySelector(`[data-rcq="${idx}"]`).value,op:root.querySelector(`[data-rcop="${idx}"]`).value,
+      vals:root.querySelector(`[data-rcv="${idx}"]`).value.split(",").map(s=>s.trim()).filter(Boolean)});}
+  return out;
+}
+function saveRuleFromModal(){
+  const r=modalState; r.label=el("er_label").value.trim(); r.when=collectRuleConds();
+  const doms=[...el("er_then").querySelectorAll("input:checked")].map(c=>c.value);
+  const note=el("er_note").value.trim();
+  r.then=doms.map((d,k)=>(k===0&&note)?{domain:d,note:note}:{domain:d});
+  if(!r.label){ toast("Add a rule label"); return; }
+  if(editRIndex<0) SCHEMA.rules.push(r); else SCHEMA.rules[editRIndex]=r;
+  saveSchema(); closeModal(); renderBuilder(); refreshAssess(); toast("Rule saved");
+}
+
+/* ============================================================
+   IMPORT / EXPORT SCHEMA
+   ============================================================ */
+function exportSchema(){ download(`IRQ_schema_${SCHEMA.meta.version||"1"}_${today()}.json`, JSON.stringify(SCHEMA,null,2), "application/json"); }
+function importSchemaFile(file){
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+    const obj=JSON.parse(fr.result);
+    if(obj.questions && obj.meta){ SCHEMA=migrate(obj); saveSchema(); renderBuilder(); refreshAssess(); toast("Questionnaire imported"); }
+    else toast("Not a valid questionnaire JSON");
+  }catch(e){ toast("Could not parse JSON"); } };
+  fr.readAsText(file);
+}
+function resetSchema(){ if(confirm("Reset the questionnaire to the built-in default? Your edits will be lost (saved assessments are kept).")){ SCHEMA=clone(DEFAULT_SCHEMA); saveSchema(); renderBuilder(); refreshAssess(); toast("Reset to default"); } }
+
+/* ---- Excel import (lazy-load SheetJS) ---- */
+function importExcel(file){
+  loadSheetJS().then(()=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(fr.result),{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+        mergeExcel(rows);
+      }catch(e){ toast("Excel parse failed: "+e.message); }
+    };
+    fr.readAsArrayBuffer(file);
+  }).catch(()=> toast("Could not load Excel reader (needs internet for first use)."));
+}
+function loadSheetJS(){
+  return new Promise((res,rej)=>{
+    if(window.XLSX) return res();
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=()=>res(); s.onerror=()=>rej();
+    document.head.appendChild(s);
+  });
+}
+function parseOptions(cell){
+  if(!cell) return [];
+  // split on newlines or " | " ; strip leading "1) " / "1. " / "1 - "
+  let parts=String(cell).split(/\r?\n|\s\|\s/).map(s=>s.trim()).filter(Boolean);
+  if(parts.length<=1){ parts=String(cell).split(/(?=\d+[\).\-]\s)/).map(s=>s.trim()).filter(Boolean); }
+  return parts.map(p=>{
+    const label=p.replace(/^\s*\d+\s*[\).\-:]\s*/,"").trim();
+    return label;
+  }).filter(Boolean);
+}
+function mergeExcel(rows){
+  // locate the real header row: first cell starts with "Q. No", or row has both "risk area" and "question"
+  let hi=-1;
+  for(let i=0;i<Math.min(rows.length,12);i++){
+    const a=String(rows[i][0]||"").toLowerCase().trim();
+    const cells=rows[i].map(x=>String(x).toLowerCase().trim());
+    const isHeader = a.startsWith("q. no")||a.startsWith("q.no")||a==="q no"||a.startsWith("q. number")||a.startsWith("q.number")
+       || (cells.includes("risk area") && cells.includes("question"));
+    if(isHeader){ hi=i; break; }
+  }
+  if(hi<0) hi=2; // default per known layout
+  const dataRows=rows.slice(hi+1).filter(r=> String(r[0]||"").trim()!=="");
+  if(!dataRows.length){ toast("No question rows found in Excel"); return; }
+  let added=0, updated=0; const seen=[];
+  dataRows.forEach(r=>{
+    const id=String(r[0]||"").trim(); if(!id) return;
+    if(/^q\.?\s*no/i.test(id)) return; // skip a stray header/legend row
+    seen.push(id);
+    const area=String(r[1]||"").trim();
+    const text=String(r[2]||"").trim();
+    const cfgRaw=String(r[3]||"").trim();
+    const config = cfgRaw ? (/^always/i.test(cfgRaw)?"Always":"Conditional") : "Always";
+    const rtype=String(r[4]||"").trim();
+    const optLabels=parseOptions(r[5]);
+    const guidance=String(r[6]||"").trim();
+    const trig=String(r[7]||"").trim();
+    const existing=(SCHEMA.questions||[]).find(q=>q.id===id);
+    if(existing){
+      // preserve triggers/scores/showIf + stable option VALUES; refresh content only
+      existing.riskArea=area||existing.riskArea;
+      existing.text=text||existing.text;
+      existing.config=config;
+      existing.guidance=guidance||existing.guidance;
+      if(trig) existing.triggerSummary=trig;
+      if(optLabels.length){
+        const prevOpts=existing.options||[];
+        const norm=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,"");
+        if(prevOpts.length===optLabels.length){
+          // same number of options → preserve by position (keep value/score/triggers, refresh label)
+          existing.options=optLabels.map((lbl,k)=>Object.assign({}, prevOpts[k], {label:lbl}));
+        } else {
+          // count changed → match by normalised label/value, else create new (triggers empty → review)
+          existing.options=optLabels.map(lbl=>{
+            const prev=prevOpts.find(o=>norm(o.label)===norm(lbl)||norm(o.value)===norm(lbl));
+            return prev? Object.assign({}, prev, {label:lbl}) : {value:lbl, label:lbl, score:0, triggers:[]};
+          });
+        }
+      }
+      updated++;
+    } else {
+      SCHEMA.questions.push({
+        id, riskArea:area, config, responseType:"single", text,
+        guidance, triggerSummary:trig, showIf:[],
+        options: optLabels.map(lbl=>({value:lbl,label:lbl,score:0,triggers:[]}))
+      });
+      added++;
+    }
+  });
+  const missing=(SCHEMA.questions||[]).map(q=>q.id).filter(id=>!seen.includes(id));
+  saveSchema(); renderBuilder(); refreshAssess();
+  let msg=`Imported: ${added} new, ${updated} updated.`;
+  if(missing.length) msg+=` Review: ${missing.length} existing question(s) not in file (${missing.join(", ")}).`;
+  if(added) msg+=" Set triggers/scores for new questions in the Builder.";
+  alert(msg);
+  toast("Excel import complete");
+}
+
+/* ============================================================
+   MODAL + TOAST + NAV
+   ============================================================ */
+function openModal(title, bodyHTML, buttons){
+  el("modalTitle").textContent=title; el("modalBody").innerHTML=bodyHTML;
+  const foot=el("modalFoot"); foot.innerHTML="";
+  (buttons||[]).forEach(b=>{ const btn=document.createElement("button"); btn.className="btn "+(b.cls||""); btn.textContent=b.label; btn.onclick=b.fn; foot.appendChild(btn); });
+  el("modalBg").classList.add("show");
+}
+function closeModal(){ el("modalBg").classList.remove("show"); modalState=null; }
+let toastT=null;
+function toast(msg){ const t=el("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
+function switchView(v){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
+  ["assess","records","builder","help"].forEach(name=> el("view-"+name).classList.toggle("hide", name!==v));
+  if(v==="records") renderRecords();
+  if(v==="builder") renderBuilder();
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+document.querySelectorAll("nav.tabs button").forEach(b=> b.addEventListener("click",()=>switchView(b.dataset.view)));
+el("modalX").addEventListener("click",closeModal);
+el("modalBg").addEventListener("click",e=>{ if(e.target===el("modalBg")) closeModal(); });
+el("saveBtn").addEventListener("click",saveAssessment);
+el("pdfBtn").addEventListener("click",buildReport);
+el("csvBtn").addEventListener("click",exportCSV);
+el("jsonBtn").addEventListener("click",exportJSON);
+el("checklistBtn").addEventListener("click",exportChecklist);
+el("clearBtn").addEventListener("click",()=>{ if(confirm("Reset this assessment form?")){ answers={}; currentRecordId=null;
+  ["m_vendor","m_service","m_owner","m_bu"].forEach(id=>el(id).value=""); el("m_date").value=today();
+  renderAssess(); renderResult(); }});
+el("addQBtn").addEventListener("click",()=>editQuestion(-1));
+el("addRuleBtn").addEventListener("click",()=>editRule(-1));
+el("saveMetaBtn").addEventListener("click",()=>{ SCHEMA.meta.title=el("b_title").value; SCHEMA.meta.org=el("b_org").value; SCHEMA.meta.version=el("b_version").value; SCHEMA.meta.answeredBy=el("b_answeredBy").value; SCHEMA.meta.updated=el("b_updated").value; saveSchema(); applyBrand(); refreshAssess(); toast("Details saved"); });
+el("addDomainBtn").addEventListener("click",()=>{ const n=el("newDomain").value.trim(); if(!n)return; SCHEMA.domains.push({name:n,desc:"",auto:false}); el("newDomain").value=""; saveSchema(); renderBuilder(); });
+el("addBandBtn").addEventListener("click",()=>{ SCHEMA.bands.push({label:"New",min:0,max:0,color:"#64748b"}); saveSchema(); renderBuilder(); });
+el("exportJsonBtn").addEventListener("click",exportSchema);
+el("importJsonBtn").addEventListener("click",()=>{ el("fileInput").dataset.mode="schema"; el("fileInput").click(); });
+el("resetSchemaBtn").addEventListener("click",resetSchema);
+el("importExcelBtn").addEventListener("click",()=> el("excelInput").click());
+el("excelInput").addEventListener("change",e=>{ if(e.target.files[0]) importExcel(e.target.files[0]); e.target.value=""; });
+el("exportAllBtn").addEventListener("click",()=> download(`IRA_all_records_${today()}.json`, JSON.stringify(loadRecords(),null,2), "application/json"));
+el("importRecordsBtn").addEventListener("click",()=>{ el("fileInput").dataset.mode="records"; el("fileInput").click(); });
+el("fileInput").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(el("fileInput").dataset.mode==="records"){
+    const fr=new FileReader(); fr.onload=()=>{ try{ const arr=JSON.parse(fr.result); if(Array.isArray(arr)){ const cur=loadRecords(); const ids=new Set(cur.map(x=>x.id)); arr.forEach(r=>{ if(!r.id)r.id=uid(); if(ids.has(r.id))r.id=uid(); cur.push(r); }); saveRecords(cur); renderRecords(); toast("Records imported"); } else toast("Expected a JSON array"); }catch(err){ toast("Could not parse JSON"); } };
+    fr.readAsText(f);
+  } else { importSchemaFile(f); }
+  e.target.value="";
+});
+
+function applyBrand(){
+  el("brandTitle").textContent=SCHEMA.meta.title||"Inherent Risk Assessment";
+  el("brandSub").textContent=(SCHEMA.meta.org? SCHEMA.meta.org+" · ":"")+"Third-Party Risk Management";
+  el("brandLogo").textContent=(SCHEMA.meta.org||"IRA").slice(0,3).toUpperCase();
+}
+
+/* ---- init ---- */
+function init(){
+  el("m_date").value=today();
+  applyBrand();
+  renderAssess(); renderResult();
+}
+init();
+</script>
+</body>
+</html>
