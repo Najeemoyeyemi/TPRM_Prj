@@ -7,6 +7,11 @@ Enterprise TPRM framework assets and Claude skills for designing, scoping, and o
 ### `docs/PROJECT_INSTRUCTIONS.md` — Project instructions
 The engagement brief: consultant role, purpose, objectives, scope, governance structure, lifecycle requirements, deliverables, tooling expectations and success criteria.
 
+### `docs/` — Platform reference
+- `platform-methodology.md` — TPRM Lifecycle Platform methodology (v3.3): phases, tiering weights, IRQ, screening gates, DDQ routing, contracting, monitoring, exit, known gaps
+- `ai-operating-model.md` — AI-enabled TPRM operating model: AI-led / Human + AI / Human-led bands, agent catalogue, architecture layers
+- `screening-analysis.md` — Stage 3 report intake and local analysis service: endpoints, analysis pipeline, hand-off to due diligence, limits
+
 ### `tprm-skill/` — TPRM framework builder skill
 A senior TPRM/GRC consultant skill that designs and operationalises enterprise-wide TPRM frameworks across the full vendor lifecycle (intake → inherent risk → due diligence → evaluation/approval → contracting → continuous monitoring → reassessment → issue/exception management → renewal → offboarding).
 
